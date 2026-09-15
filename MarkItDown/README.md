@@ -1,6 +1,26 @@
 # MarkItDown.Net
 
-Librería en C# (.NET 8) que convierte documentos **Word (.docx)** y **PDF** a **Markdown listo para IA**, al estilo de [microsoft/markitdown](https://github.com/microsoft/markitdown), pero 100 % nativa en .NET, **sin usar IA** y sin conexión a internet: le das el archivo y te devuelve el Markdown.
+> Parte de [**LibreriasWanaka**](../README.md).
+
+Librería en C# (**.NET 10**) que convierte documentos **Word (.docx)** y **PDF** a **Markdown listo para IA**, al estilo de [`microsoft/markitdown`](https://github.com/microsoft/markitdown), pero 100 % nativa en .NET, **sin usar IA** y **sin conexión a internet**: le das el archivo y te devuelve el Markdown.
+
+Existe una variante paralela compilada para **.NET Framework 4.8** en [`framework48/`](framework48/), pensada para integrarse en aplicaciones legadas (WinForms 4.8, Web Forms, servicios Windows antiguos). Ver más abajo la sección *Variante .NET Framework 4.8*.
+
+## Instalar en tu proyecto
+
+Referencia de proyecto (recomendado dentro del monorepo o si clonás `LibreriasWanaka` junto a tu solución):
+
+```bash
+dotnet add MiApi.csproj reference "../LibreriasWanaka/MarkItDown/src/MarkItDown/MarkItDown.csproj"
+```
+
+Como DLL compilada: `dotnet build -c Release` y copiar del `bin/Release/net10.0/` estos tres ensamblados a tu proyecto:
+
+- `MarkItDown.dll` (fachada + DI)
+- `MarkItDown.Converters.dll` (docx/pdf)
+- `MarkItDown.Core.dll` (contratos)
+
+Solo hace falta agregar la referencia a `MarkItDown.dll`; las otras dos DLL viajan con ella.
 
 ## Arquitectura en capas
 
@@ -21,11 +41,11 @@ Librería en C# (.NET 8) que convierte documentos **Word (.docx)** y **PDF** a *
 
 - **`MarkItDown.Core`** — contratos y modelos. No depende de nada externo.
 - **`MarkItDown.Converters`** — implementaciones por formato. Depende solo de Core.
-- **`MarkItDown`** — punto de entrada que enruta por extensión y registro para inyección de dependencias. Es la única referencia que necesita tu aplicación (las otras dos DLL llegan por transitividad).
+- **`MarkItDown`** — punto de entrada que enruta por extensión y registra la DI. Es la única referencia que necesita tu aplicación (las otras dos DLL llegan por transitividad).
 
 Además hay dos aplicaciones de ejemplo que consumen la librería:
 
-- **`app/MarkItDown.App`** — aplicación de escritorio (Windows Forms, `net8.0-windows`): un formulario para elegir el archivo de origen, el destino `.md` y convertirlo con un botón.
+- **`app/MarkItDown.App`** — aplicación de escritorio (Windows Forms, `net10.0-windows`): formulario para elegir origen, destino `.md` y convertir con un botón.
 - **`samples/MarkItDown.Sample`** — herramienta de línea de comandos.
 
 ## Uso básico
@@ -47,13 +67,26 @@ using var stream = archivo.OpenReadStream();
 var resultado2 = converter.Convert(stream, archivo.FileName);
 ```
 
+`MarkItDownConverter` es **thread-safe** (interno *copy-on-write*): podés registrarlo como singleton y reutilizarlo entre peticiones.
+
+## API pública
+
+| Método | Descripción |
+|---|---|
+| `Convert(string path, ConversionOptions?)` | Convierte un archivo a `ConversionResult`. |
+| `Convert(Stream, string fileNameOrExtension, ConversionOptions?)` | Convierte desde un stream; usa la extensión para elegir el convertidor. |
+| `ConvertToMarkdown(string path, ConversionOptions?)` | Atajo que devuelve solo el string Markdown. |
+| `ConvertToFile(string input, string output, ConversionOptions?)` | Convierte y escribe UTF-8 en `output`. |
+| `RegisterConverter(IDocumentConverter)` | Agrega un convertidor propio (tiene prioridad sobre los integrados). |
+| `SupportedExtensions` | Colección con las extensiones que puede procesar (`.docx`, `.pdf`, …). |
+
 `ConversionResult` incluye:
 
-| Propiedad  | Descripción                                                        |
-|------------|--------------------------------------------------------------------|
-| `Markdown` | El contenido convertido (GitHub Flavored Markdown).                 |
-| `Title`    | Título del documento (metadatos o primer encabezado), si existe.    |
-| `Warnings` | Advertencias no fatales (imágenes omitidas, páginas sin texto, …).  |
+| Propiedad  | Descripción                                                       |
+|------------|-------------------------------------------------------------------|
+| `Markdown` | El contenido convertido (GitHub Flavored Markdown).               |
+| `Title`    | Título del documento (metadatos o primer encabezado), si existe.  |
+| `Warnings` | Advertencias no fatales (imágenes omitidas, páginas sin texto…). |
 
 ## Opciones
 
@@ -86,7 +119,7 @@ public class MiServicio(MarkItDownConverter converter)
 
 ## Extensible: agregar tus propios formatos
 
-Implementa `IDocumentConverter` (capa Core) y regístralo:
+Implementá `IDocumentConverter` (capa Core) y registralo:
 
 ```csharp
 converter.RegisterConverter(new MiConvertidorHtml()); // tiene prioridad sobre los integrados
@@ -119,40 +152,75 @@ services.AddMarkItDown();
 | Listas numeradas             | `1. x`                            |
 | Páginas                      | `<!-- Página N -->` (opcional)    |
 
+## Excepciones
+
+| Excepción | Causa |
+|---|---|
+| `UnsupportedFileFormatException` | La extensión no tiene convertidor registrado. |
+| `MarkdownConversionException` | El archivo está dañado, protegido con contraseña o no se puede leer. |
+| `FileNotFoundException`, `ArgumentException`, `ArgumentNullException` | Errores de entrada estándar. |
+
 ## Limitaciones conocidas
 
 - **PDF no guarda estructura semántica**: la detección de encabezados y listas es heurística (igual que en markitdown, que extrae texto plano). Documentos con maquetación compleja (varias columnas, tablas dibujadas con líneas) pueden salir imperfectos.
-- **PDF escaneados** (solo imagen) no tienen texto extraíble; el resultado es vacío con una advertencia. Esta librería no hace OCR.
+- **PDF escaneados** (solo imagen) no tienen texto extraíble; el resultado es vacío con una advertencia. **Esta librería no hace OCR** — para eso está [LibreriaOCR](../LibreriaOCR/README.md) en el mismo monorepo.
 - **Palabras cortadas con guion** al final de línea en PDF: el guion se elimina solo si la palabra fusionada aparece en otra parte del documento; si un compuesto ("socio-económico") se corta justo en su guion y no se repite, el resultado conserva el guion (caso recuperable).
-- **`.doc` antiguo** (Word 97–2003, binario) no está soportado: guárdalo como `.docx`.
+- **`.doc` antiguo** (Word 97–2003, binario) no está soportado: guardalo como `.docx`.
 - Documentos protegidos con contraseña lanzan `MarkdownConversionException`.
-- La API es sincrónica (OpenXml y PdfPig lo son); para no bloquear un hilo de UI envuélvela en `Task.Run`.
+- La API es sincrónica (OpenXml y PdfPig lo son); para no bloquear un hilo de UI envolvela en `Task.Run`.
+
+## Combinar con LibreriaOCR (PDF escaneado → Markdown)
+
+Si el PDF es puramente escaneado, primero pasalo por OCR y luego convertí el texto:
+
+```csharp
+using LibreriaOCR;
+using MarkItDown;
+
+using var ocr = new OcrService();
+var texto = ocr.Recognize(@"C:\docs\escaneo.pdf").Text;
+File.WriteAllText(@"C:\docs\escaneo.md", "# Escaneo\n\n" + texto);
+```
+
+## Variante .NET Framework 4.8
+
+`framework48/` contiene la misma solución (Core + Converters + Fachada + App WinForms + Sample + Tests) pero compilada para `net48`. Se aísla del `Directory.Build.props` de la raíz mediante uno propio (`framework48/Directory.Build.props`), que fija `TargetFramework=net48`, agrega `Microsoft.NETFramework.ReferenceAssemblies` para compilar sin depender del targeting pack instalado y activa `AutoGenerateBindingRedirects`.
+
+Usala cuando tu consumidor sea:
+
+- Una app **WinForms / WPF sobre .NET Framework 4.8**.
+- Un **Web Forms** o **WCF** legado.
+- Un **servicio Windows** que aún no migró a .NET moderno.
+
+El API pública (`MarkItDownConverter`, `ConversionOptions`, `ConversionResult`) es idéntica a la de `net10`; solo cambian las dependencias transitivas de DI (`Microsoft.Extensions.DependencyInjection.Abstractions 8.0.2`).
 
 ## Compilar y probar
 
 ```bash
-dotnet build
-dotnet test
+# Solución completa (desde la raíz del monorepo)
+dotnet build LibreriasWanaka.slnx -c Release
+
+# Solo tests de MarkItDown
+dotnet test MarkItDown/tests/MarkItDown.Tests/MarkItDown.Tests.csproj
 
 # App de escritorio (formulario Windows Forms):
-dotnet run --project app/MarkItDown.App
+dotnet run --project MarkItDown/app/MarkItDown.App
 
 # Herramienta de línea de comandos:
-dotnet run --project samples/MarkItDown.Sample -- "C:\docs\informe.docx"
+dotnet run --project MarkItDown/samples/MarkItDown.Sample -- "C:\docs\informe.docx"
 ```
 
 ### App de escritorio
 
 `MarkItDown.App` abre una ventana donde el usuario:
 
-1. Pulsa **Examinar...** y elige el `.docx` o `.pdf` a convertir.
-2. El destino `.md` se propone automáticamente (misma carpeta y nombre); puede cambiarlo con el segundo **Examinar...**.
+1. Pulsa **Examinar…** y elige el `.docx` o `.pdf` a convertir.
+2. El destino `.md` se propone automáticamente (misma carpeta y nombre); puede cambiarlo con el segundo **Examinar…**.
 3. Opcionalmente marca *Extraer imágenes* (a una subcarpeta `imagenes`) y *Abrir al terminar*.
 4. Pulsa **Convertir a Markdown**. La conversión corre en segundo plano (no congela la ventana) y muestra el resultado, el título detectado y las advertencias.
-
-Las DLL quedan en `src/MarkItDown/bin/<config>/net8.0/` (`MarkItDown.dll`, `MarkItDown.Converters.dll`, `MarkItDown.Core.dll`), consumibles desde cualquier aplicación .NET 8, 9 o 10.
 
 ## Dependencias (open source, sin IA)
 
 - [DocumentFormat.OpenXml](https://www.nuget.org/packages/DocumentFormat.OpenXml) (MIT) — lectura de .docx.
 - [PdfPig](https://www.nuget.org/packages/PdfPig) (Apache-2.0) — extracción de texto y layout de PDF.
+- [Microsoft.Extensions.DependencyInjection.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions) (MIT) — solo para `AddMarkItDown()`.

@@ -1,13 +1,25 @@
 # LibreriaOCR
 
-Librería en **.NET 10** que recibe un documento (**PDF, PNG, JPG/JPEG, TIF/TIFF**) y devuelve el texto por **OCR** en español. 100 % gratuita, basada en **Tesseract**.
+> Parte de [**LibreriasWanaka**](../README.md).
 
-Sirve igual en **web (ASP.NET/Blazor)**, **escritorio (WinForms/WPF)** o un **servicio de Windows**: `OcrService` es *thread-safe* (mantiene un pool interno de motores).
+Librería en **.NET 10** que recibe un documento (**PDF, PNG, JPG/JPEG, TIF/TIFF**) y devuelve el texto por **OCR** en español. 100 % gratuita, basada en **Tesseract**. Sin conexión a internet.
+
+Sirve igual en **web (ASP.NET / Blazor)**, **escritorio (WinForms / WPF)** o un **servicio de Windows**: `OcrService` es *thread-safe* y mantiene un pool interno de motores.
 
 ## Requisitos
 
 - .NET 10 SDK
 - Windows x64/x86 (los binarios nativos de Tesseract, Leptonica, PDFium y Skia se copian solos al `bin`).
+
+## Instalar en tu proyecto
+
+Referencia de proyecto (recomendado dentro del monorepo o si clonás `LibreriasWanaka` junto a tu solución):
+
+```bash
+dotnet add MiApi.csproj reference "../LibreriasWanaka/LibreriaOCR/src/LibreriaOCR/LibreriaOCR.csproj"
+```
+
+Como DLL compilada: copiar `LibreriaOCR.dll` **junto con la carpeta `tessdata/`** al `bin` del ejecutable final (los `.traineddata` se buscan por defecto al lado del ensamblado).
 
 ## Estructura
 
@@ -35,7 +47,7 @@ foreach (var p in r.Pages)                         // desglose por página
 Entradas admitidas: **ruta de archivo**, **`Stream`** o **`byte[]`**; en versión síncrona (`Recognize`) y asíncrona (`RecognizeAsync`).
 
 ```csharp
-OcrResult r = await ocr.RecognizeAsync(stream, "escaneo.tif");
+OcrResult r  = await ocr.RecognizeAsync(stream, "escaneo.tif");
 OcrResult r2 = ocr.Recognize(bytes, "documento.png");
 string texto = OcrService.ExtractText(@"C:\docs\carta.png").Text;   // atajo puntual
 ```
@@ -55,15 +67,31 @@ builder.Services.AddSingleton(new OcrService(new OcrOptions { Languages = "spa" 
 private static readonly OcrService Ocr = new(new OcrOptions { Languages = "spa" });
 ```
 
+## OCR de imágenes incrustadas en un PDF
+
+Complemento del texto digital: si un PDF ya trae texto pero además incrusta imágenes con texto dentro (logotipos, banners, capturas de pantalla), `RecognizeEmbeddedImages` corre OCR **solo** sobre esas imágenes, sin rasterizar la página entera.
+
+```csharp
+byte[] pdf = File.ReadAllBytes(@"C:\docs\poliza.pdf");
+OcrResult imgs = await ocr.RecognizeEmbeddedImagesAsync(pdf);
+
+foreach (var p in imgs.Pages)
+    Console.WriteLine($"Pág {p.PageNumber} · imagen · conf {p.Confidence:0.#}% · {p.Text}");
+```
+
+Las imágenes por debajo de `OcrOptions.MinEmbeddedImagePixels` (por defecto 40 000 px = ≈200×200) se ignoran para filtrar íconos y viñetas donde Tesseract solo produce ruido. Si el PDF no tiene imágenes procesables, devuelve un resultado vacío (no lanza).
+
 ## `OcrResult`
 
 | Miembro | Descripción |
 |---|---|
 | `Text` | Texto completo (todas las páginas) |
 | `Pages` | Lista de `OcrPage` (texto y confianza por página) |
-| `MeanConfidence` | Confianza media 0–100 (‑1 si no hubo OCR, p. ej. PDF digital) |
+| `MeanConfidence` | Confianza media 0–100 (−1 si no hubo OCR, p. ej. PDF digital) |
 | `SourceKind` | `Image`, `PdfText`, `PdfOcr` o `Mixed` |
 | `PageCount`, `Duration`, `FileName` | Metadatos |
+
+`OcrPage.FromEmbeddedText = true` indica que esa página se resolvió sin OCR (texto digital del PDF); en ese caso `Confidence = −1`.
 
 ## `OcrOptions`
 
@@ -75,19 +103,21 @@ private static readonly OcrService Ocr = new(new OcrOptions { Languages = "spa" 
 | `PreferEmbeddedPdfText` | `true` | En PDF, usa el texto digital si existe y solo hace OCR de páginas escaneadas |
 | `MinEmbeddedCharsPerPage` | `16` | Umbral para aceptar texto digital de una página sin OCR |
 | `MaxConcurrency` | nº de núcleos | Máximo de motores OCR simultáneos |
+| `MinEmbeddedImagePixels` | `40 000` (≈200×200) | Umbral (ancho × alto) por debajo del cual las imágenes incrustadas se descartan en `RecognizeEmbeddedImages` |
 
 ## Idioma / precisión
 
 - Incluido: **español** (`tessdata/spa.traineddata`, versión *fast*).
-- ¿Más precisión? Reemplaza ese archivo por la versión **best**:
+- ¿Más precisión? Reemplazá ese archivo por la versión **best**:
   <https://github.com/tesseract-ocr/tessdata_best/raw/main/spa.traineddata> (más lento pero más exacto).
-- ¿Otro idioma? Descarga su `.traineddata` en `tessdata` y ponlo en `Languages`.
+- ¿Otro idioma? Descargá su `.traineddata` en `tessdata` y ponelo en `Languages`.
 
 ## Notas
 
 - **TIFF multipágina**: soportado (una `OcrPage` por página).
-- **PDF híbrido**: si la página ya trae texto digital se extrae directo (exacto, sin OCR); si es escaneo, se rasteriza y se hace OCR. Un PDF mixto devuelve `SourceKind = Mixed`.
+- **PDF híbrido**: si la página trae texto digital se extrae directo (exacto, sin OCR); si es escaneo, se rasteriza y se hace OCR. Un PDF mixto devuelve `SourceKind = Mixed`.
 - **Cambiar de motor**: `OcrService` usa la interfaz `IOcrEngine`; se puede enchufar otro motor (p. ej. PaddleOCR) con el constructor `new OcrService(() => new MiMotor(), options)`.
+- **Excepciones**: `FormatoNoSoportadoException` (extensión no admitida), `OcrException` (PDF dañado o rasterizado fallido), más las estándar (`ArgumentException`, `FileNotFoundException`, `ObjectDisposedException`).
 
 ## Probar
 
@@ -110,3 +140,9 @@ dotnet run --project samples/LibreriaOCR.WinFormsTester
 | (otros dos) | 94–95 % | 1.5–2.1 s |
 
 Promedio ~**91 %** de confianza, ~1.5 s por página.
+
+## Dependencias
+
+- [Tesseract](https://github.com/tesseract-ocr/tesseract) vía [TesseractOCR](https://www.nuget.org/packages/TesseractOCR) (Apache-2.0)
+- [PdfPig](https://www.nuget.org/packages/PdfPig) (Apache-2.0) — texto digital de PDF
+- [PDFtoImage](https://www.nuget.org/packages/PDFtoImage) (MIT) — rasterizado de PDF a imagen
