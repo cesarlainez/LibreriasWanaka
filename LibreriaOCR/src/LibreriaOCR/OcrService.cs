@@ -121,6 +121,81 @@ public sealed class OcrService : IDisposable
         return service.Recognize(filePath);
     }
 
+    /// <summary>
+    /// Corre OCR SOLO sobre las imágenes incrustadas en un PDF (fotos, capturas de pantalla,
+    /// escaneos parciales), SIN rasterizar las páginas completas. Pensado como complemento del
+    /// texto digital ya extraído: si un PDF trae texto Y además incrusta imágenes con texto
+    /// dentro (logotipos, banners, screenshots), este método captura ese texto adicional.
+    /// <para>
+    /// Devuelve una <see cref="OcrPage"/> por cada imagen incrustada procesada; varias entradas
+    /// pueden compartir <see cref="OcrPage.PageNumber"/> cuando una misma página contiene varias
+    /// imágenes. Imágenes por debajo de <see cref="OcrOptions.MinEmbeddedImagePixels"/> se ignoran.
+    /// </para>
+    /// <para>Si el PDF no tiene imágenes procesables, devuelve un resultado vacío (no lanza).</para>
+    /// </summary>
+    public OcrResult RecognizeEmbeddedImages(byte[] pdf, CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (pdf is null || pdf.Length == 0)
+            throw new ArgumentException("El PDF está vacío.", nameof(pdf));
+
+        var stopwatch = Stopwatch.StartNew();
+
+        IEnumerable<PdfProcessor.EmbeddedImage> imagenes;
+        try
+        {
+            imagenes = PdfProcessor.ExtractEmbeddedImages(pdf, _options.MinEmbeddedImagePixels);
+        }
+        catch (Exception ex)
+        {
+            throw new OcrException("No se pudo leer el PDF para enumerar sus imágenes incrustadas.", ex);
+        }
+
+        var pages = new List<OcrPage>();
+        foreach (var img in imagenes)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var engine = RentEngine(cancellationToken);
+            try
+            {
+                // Best effort: hay imágenes cuyos bytes crudos (JPX, CCITT, JBIG2) Tesseract no
+                // sabe cargar; se descartan silenciosamente en vez de reventar el flujo entero.
+                IReadOnlyList<OcrTextResult> reconocidos;
+                try
+                {
+                    reconocidos = engine.Recognize(img.Bytes, cancellationToken);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                var texto = reconocidos.Count > 0 ? reconocidos[0].Text : string.Empty;
+                if (string.IsNullOrWhiteSpace(texto)) continue;
+
+                pages.Add(new OcrPage
+                {
+                    PageNumber = img.PageNumber,
+                    Text = texto,
+                    Confidence = reconocidos[0].Confidence,
+                    FromEmbeddedText = false
+                });
+            }
+            finally
+            {
+                ReturnEngine(engine);
+            }
+        }
+
+        stopwatch.Stop();
+        return BuildResult(pages, OcrSourceKind.Image, stopwatch.Elapsed, fileName: null);
+    }
+
+    /// <summary>Versión asíncrona de <see cref="RecognizeEmbeddedImages(byte[], CancellationToken)"/>.</summary>
+    public Task<OcrResult> RecognizeEmbeddedImagesAsync(byte[] pdf, CancellationToken cancellationToken = default)
+        => Task.Run(() => RecognizeEmbeddedImages(pdf, cancellationToken), cancellationToken);
+
     // ------------------------------------------------------------------ Procesamiento
 
     private (List<OcrPage> pages, OcrSourceKind kind) ProcessImage(byte[] data, CancellationToken ct)

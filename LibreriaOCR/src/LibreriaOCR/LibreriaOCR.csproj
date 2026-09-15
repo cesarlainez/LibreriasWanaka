@@ -22,11 +22,17 @@
     <PackageReference Include="TesseractOCR" Version="5.5.2" />
   </ItemGroup>
 
-  <!-- Copia los archivos de idioma (.traineddata) al bin, y de ahí a quien referencie la DLL -->
+  <!-- Copia los archivos de idioma (.traineddata) al bin, y de ahí a quien referencie la DLL.
+       Se declara como <Content> (no <None>) porque MSBuild solo propaga contenido con
+       CopyToOutputDirectory a proyectos consumidores cuando el item es Content: con <None> el
+       archivo quedaba en el bin de LibreriaOCR pero NUNCA llegaba al bin de la Api/Worker que
+       hacen ProjectReference, y Tesseract fallaba al arrancar buscando spa.traineddata. -->
   <ItemGroup>
-    <None Update="tessdata\**">
+    <Content Include="tessdata\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+      <Pack>true</Pack>
+      <PackagePath>contentFiles\any\any\tessdata</PackagePath>
+    </Content>
   </ItemGroup>
 
 </Project>

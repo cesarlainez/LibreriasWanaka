@@ -36,4 +36,12 @@ public sealed class OcrOptions
     /// Si es null, se usa el número de procesadores. El OCR es intensivo en CPU.
     /// </summary>
     public int? MaxConcurrency { get; set; }
+
+    /// <summary>
+    /// Umbral (en píxeles: ancho×alto) por debajo del cual una imagen incrustada NO se pasa
+    /// por OCR al usar <see cref="OcrService.RecognizeEmbeddedImages(byte[], System.Threading.CancellationToken)"/>.
+    /// Por defecto 40.000 (aprox. 200×200): filtra íconos, viñetas y logotipos pequeños donde
+    /// Tesseract solo produce ruido.
+    /// </summary>
+    public int MinEmbeddedImagePixels { get; set; } = 40_000;
 }
