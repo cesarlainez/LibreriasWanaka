@@ -1,0 +1,198 @@
+===============================================================================
+  MarkItDown.Net  -  Librería para convertir PDF y Word (.docx) a Markdown
+  Versión 1.0.0  -  .NET 8  -  Sin IA, 100% local
+===============================================================================
+
+Convierte archivos PDF y Word (.docx) a Markdown listo para enviar a un LLM.
+No usa inteligencia artificial ni conexión a internet: usted le da el archivo
+y le devuelve el Markdown.
+
+Incluye además un servicio de limpieza post-extracción (DocumentToMarkdownCleaner)
+para estandarizar y reducir tokens de forma conservadora.
+
+
+-------------------------------------------------------------------------------
+ 1. UBICACIÓN DE LA LIBRERÍA
+-------------------------------------------------------------------------------
+
+Las DLL están compartidas en:
+
+    M:\Librerias .NET\MarkDown
+
+IMPORTANTE: esa carpeta debe contener las 14 DLL (la librería + sus
+dependencias). Si copia archivos a otra parte, cópielas TODAS juntas:
+
+    MarkItDown.dll                        <- la que usted referencia
+    MarkItDown.Converters.dll
+    MarkItDown.Core.dll
+    DocumentFormat.OpenXml.dll            <- dependencia (lectura de .docx)
+    DocumentFormat.OpenXml.Framework.dll
+    System.IO.Packaging.dll
+    UglyToad.PdfPig.dll                   <- dependencia (lectura de PDF)
+    UglyToad.PdfPig.Core.dll
+    UglyToad.PdfPig.Fonts.dll
+    UglyToad.PdfPig.DocumentLayoutAnalysis.dll
+    UglyToad.PdfPig.Tokenization.dll
+    UglyToad.PdfPig.Tokens.dll
+    UglyToad.PdfPig.Package.dll
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll  <- solo si usa DI
+
+Si falta alguna de las dependencias, su aplicación compilará pero fallará en
+tiempo de ejecución con "FileNotFoundException" al abrir el primer archivo.
+
+Requisito del proyecto que la consume: .NET 8 o superior (net8.0, net9.0, net10.0).
+
+
+-------------------------------------------------------------------------------
+ 2. CÓMO REFERENCIARLA
+-------------------------------------------------------------------------------
+
+  OPCIÓN A) Visual Studio (interfaz)
+  ----------------------------------
+  1. Clic derecho en su proyecto > "Agregar" > "Referencia de proyecto..."
+  2. Botón "Examinar..."
+  3. Vaya a  M:\Librerias .NET\MarkDown  y seleccione  MarkItDown.dll
+  4. Aceptar.
+
+  Nota: basta con referenciar MarkItDown.dll. Las demás DLL se cargan solas
+  porque están en la misma carpeta; asegúrese de que se copien junto a su .exe
+  (ver OPCIÓN B para forzar la copia automática).
+
+
+  OPCIÓN B) Editando el archivo .csproj  (RECOMENDADO)
+  ----------------------------------------------------
+  Agregue este bloque dentro del .csproj de su aplicación. El <Private>true</Private>
+  hace que la DLL (y sus dependencias vecinas) se copien a la carpeta de salida
+  (bin) al compilar, para que la app funcione al distribuirla:
+
+    <ItemGroup>
+      <Reference Include="MarkItDown">
+        <HintPath>M:\Librerias .NET\MarkDown\MarkItDown.dll</HintPath>
+        <Private>true</Private>
+      </Reference>
+    </ItemGroup>
+
+  Si al compilar NO se copian automáticamente las DLL de dependencia (OpenXml /
+  PdfPig) a su carpeta bin, agregue también este bloque para copiarlas todas:
+
+    <ItemGroup>
+      <None Include="M:\Librerias .NET\MarkDown\*.dll"
+            Exclude="M:\Librerias .NET\MarkDown\MarkItDown.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <Link>%(Filename)%(Extension)</Link>
+      </None>
+    </ItemGroup>
+
+
+-------------------------------------------------------------------------------
+ 3. USO BÁSICO  (convertir a Markdown)
+-------------------------------------------------------------------------------
+
+    using MarkItDown;
+
+    var converter = new MarkItDownConverter();
+
+    // a) Desde una ruta de archivo:
+    var resultado = converter.Convert(@"C:\docs\informe.docx");
+    Console.WriteLine(resultado.Markdown);
+
+    // b) Convertir directamente a un archivo .md:
+    converter.ConvertToFile(@"C:\docs\poliza.pdf", @"C:\docs\poliza.md");
+
+    // c) Desde un Stream (por ejemplo, un archivo subido en ASP.NET Core):
+    using var stream = archivo.OpenReadStream();
+    var r = converter.Convert(stream, archivo.FileName);   // usa la extensión del nombre
+
+El objeto ConversionResult contiene:
+    .Markdown   -> el texto convertido (GitHub Flavored Markdown)
+    .Title      -> título del documento (si se detecta)
+    .Warnings   -> advertencias (imágenes omitidas, PDF sin texto, etc.)
+
+Formatos soportados: .docx (Word) y .pdf.
+    - Los .doc antiguos (Word 97-2003) NO se soportan: guárdelos como .docx.
+    - Los PDF escaneados (solo imagen) no tienen texto extraíble (no hay OCR);
+      devuelven resultado vacío con una advertencia.
+
+
+-------------------------------------------------------------------------------
+ 4. OPCIONES DE CONVERSIÓN
+-------------------------------------------------------------------------------
+
+    using MarkItDown.Core;
+
+    var opciones = new ConversionOptions
+    {
+        ExtractImages = true,                       // extrae imágenes del .docx
+        ImageOutputDirectory = @"C:\docs\imagenes", // carpeta destino de imágenes
+        ImageLinkPrefix = "imagenes/",              // prefijo del enlace ![](...)
+        IncludePageMarkers = true,                  // PDF: agrega <!-- Página N -->
+        DetectPdfHeadings = true,                   // PDF: detecta títulos por tamaño
+    };
+
+    var resultado = converter.Convert(@"C:\docs\informe.pdf", opciones);
+
+
+-------------------------------------------------------------------------------
+ 5. LIMPIEZA POST-EXTRACCIÓN  (opcional, para reducir tokens del LLM)
+-------------------------------------------------------------------------------
+
+Estandariza la paginación (conservando el número de página), elimina artefactos
+de OCR y compacta líneas en blanco, con intervención mínima.
+
+    using MarkItDown.Core;
+
+    var cleaner = new DocumentToMarkdownCleaner();
+    string limpio = cleaner.Clean(resultado.Markdown);
+
+Ejemplo típico encadenado:
+
+    var md = new MarkItDownConverter().ConvertToMarkdown(@"C:\docs\informe.pdf");
+    var mdLimpio = new DocumentToMarkdownCleaner().Clean(md);
+    // 'mdLimpio' es lo que se envía al LLM.
+
+
+-------------------------------------------------------------------------------
+ 6. INYECCIÓN DE DEPENDENCIAS (ASP.NET Core / Worker)  -  opcional
+-------------------------------------------------------------------------------
+
+    using MarkItDown;
+
+    builder.Services.AddMarkItDown();
+
+    // luego, en cualquier servicio o controlador:
+    public class MiServicio(MarkItDownConverter converter)
+    {
+        public string Convertir(string ruta) => converter.ConvertToMarkdown(ruta);
+    }
+
+(Requiere la DLL Microsoft.Extensions.DependencyInjection.Abstractions.dll.)
+
+
+-------------------------------------------------------------------------------
+ 7. MANEJO DE ERRORES
+-------------------------------------------------------------------------------
+
+    try
+    {
+        var r = converter.Convert(rutaArchivo);
+    }
+    catch (FileNotFoundException)          { /* el archivo no existe */ }
+    catch (UnsupportedFileFormatException) { /* extensión no soportada (.doc, etc.) */ }
+    catch (MarkdownConversionException)    { /* archivo dañado o protegido */ }
+
+Todas las excepciones y sus mensajes están en español.
+
+
+-------------------------------------------------------------------------------
+ 8. NOTA SOBRE ACTUALIZACIONES
+-------------------------------------------------------------------------------
+
+Cuando se genere una versión nueva de la librería, reemplace en
+M:\Librerias .NET\MarkDown TODAS las DLL (no solo MarkItDown.dll), ya que las
+dependencias pueden cambiar de versión entre compilaciones.
+
+Alternativa profesional recomendada a mediano plazo: empaquetar la librería como
+paquete NuGet (.nupkg) en un feed interno. Así NuGet resuelve las dependencias
+automáticamente y se evita copiar DLL a mano.
+
+===============================================================================

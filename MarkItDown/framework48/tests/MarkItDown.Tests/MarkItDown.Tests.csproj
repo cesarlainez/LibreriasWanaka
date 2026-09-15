@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>MarkItDown.Tests</RootNamespace>
+    <AssemblyName>MarkItDown.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- xUnit v2 y runners compatibles con .NET Framework 4.8. -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Referenciado explícitamente por las pruebas de inyección de dependencias. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MarkItDown\MarkItDown.csproj" />
+  </ItemGroup>
+</Project>

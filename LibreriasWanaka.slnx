@@ -1,0 +1,43 @@
+<Solution>
+  <Folder Name="/LibreriaOCR/">
+    <Folder Name="/LibreriaOCR/src/">
+      <Project Path="LibreriaOCR/src/LibreriaOCR/LibreriaOCR.csproj" />
+    </Folder>
+    <Folder Name="/LibreriaOCR/samples/">
+      <Project Path="LibreriaOCR/samples/LibreriaOCR.Demo/LibreriaOCR.Demo.csproj" />
+      <Project Path="LibreriaOCR/samples/LibreriaOCR.WinFormsTester/LibreriaOCR.WinFormsTester.csproj" />
+    </Folder>
+  </Folder>
+  <Folder Name="/MarkItDown/">
+    <Folder Name="/MarkItDown/src/">
+      <Project Path="MarkItDown/src/MarkItDown/MarkItDown.csproj" />
+      <Project Path="MarkItDown/src/MarkItDown.Converters/MarkItDown.Converters.csproj" />
+      <Project Path="MarkItDown/src/MarkItDown.Core/MarkItDown.Core.csproj" />
+    </Folder>
+    <Folder Name="/MarkItDown/app/">
+      <Project Path="MarkItDown/app/MarkItDown.App/MarkItDown.App.csproj" />
+    </Folder>
+    <Folder Name="/MarkItDown/samples/">
+      <Project Path="MarkItDown/samples/MarkItDown.Sample/MarkItDown.Sample.csproj" />
+    </Folder>
+    <Folder Name="/MarkItDown/tests/">
+      <Project Path="MarkItDown/tests/MarkItDown.Tests/MarkItDown.Tests.csproj" />
+    </Folder>
+  </Folder>
+  <Folder Name="/MarkItDown.Framework48/">
+    <Folder Name="/MarkItDown.Framework48/src/">
+      <Project Path="MarkItDown/framework48/src/MarkItDown/MarkItDown.csproj" />
+      <Project Path="MarkItDown/framework48/src/MarkItDown.Converters/MarkItDown.Converters.csproj" />
+      <Project Path="MarkItDown/framework48/src/MarkItDown.Core/MarkItDown.Core.csproj" />
+    </Folder>
+    <Folder Name="/MarkItDown.Framework48/app/">
+      <Project Path="MarkItDown/framework48/app/MarkItDown.App/MarkItDown.App.csproj" />
+    </Folder>
+    <Folder Name="/MarkItDown.Framework48/samples/">
+      <Project Path="MarkItDown/framework48/samples/MarkItDown.Sample/MarkItDown.Sample.csproj" />
+    </Folder>
+    <Folder Name="/MarkItDown.Framework48/tests/">
+      <Project Path="MarkItDown/framework48/tests/MarkItDown.Tests/MarkItDown.Tests.csproj" />
+    </Folder>
+  </Folder>
+</Solution>

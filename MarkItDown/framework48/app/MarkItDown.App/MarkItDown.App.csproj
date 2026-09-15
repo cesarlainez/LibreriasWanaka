@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>MarkItDown.App</RootNamespace>
+    <AssemblyName>MarkItDown.App</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MarkItDown\MarkItDown.csproj" />
+  </ItemGroup>
+</Project>

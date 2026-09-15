@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MarkItDown.Sample</RootNamespace>
+    <AssemblyName>MarkItDown.Sample</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MarkItDown\MarkItDown.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,156 @@
+===============================================================================
+  MarkDown Framework 4.8
+  Librería para convertir PDF y Word (.docx) a Markdown  -  .NET Framework 4.8
+  Versión 1.0.0  -  Sin IA, 100% local
+===============================================================================
+
+Esta es la versión para .NET FRAMEWORK 4.8 de la librería MarkItDown.
+Es funcionalmente IDÉNTICA a la versión .NET 8; solo cambian detalles internos
+por compatibilidad con Framework (ver sección 6). Convierte archivos .docx y
+.pdf a Markdown listo para un LLM, sin inteligencia artificial ni internet.
+
+
+-------------------------------------------------------------------------------
+ 1. ESTRUCTURA DE LA SOLUCIÓN
+-------------------------------------------------------------------------------
+
+  MarkDown Framework 4.8.slnx
+  src\
+    MarkItDown.Core\          -> contratos, opciones, resultado, excepciones,
+                                 y el limpiador DocumentToMarkdownCleaner
+    MarkItDown.Converters\    -> convertidores .docx (OpenXml) y .pdf (PdfPig)
+    MarkItDown\               -> fachada MarkItDownConverter + soporte para DI
+  samples\
+    MarkItDown.Sample\        -> ejemplo de consola
+  app\
+    MarkItDown.App\           -> ejemplo de escritorio (Windows Forms)
+  tests\
+    MarkItDown.Tests\         -> 72 pruebas (xUnit)
+
+  Requisitos para compilar/consumir: .NET Framework 4.8 y un SDK de .NET
+  reciente (o Visual Studio 2022). Los proyectos son de estilo SDK, así que se
+  restauran los paquetes NuGet automáticamente (OpenXml, PdfPig).
+
+
+-------------------------------------------------------------------------------
+ 2. COMPILAR Y PROBAR
+-------------------------------------------------------------------------------
+
+  Desde esta carpeta:
+
+    dotnet build "MarkDown Framework 4.8.slnx" -c Release
+    dotnet test  "MarkDown Framework 4.8.slnx"
+
+  Ejecutar el ejemplo de consola:
+
+    dotnet run --project samples\MarkItDown.Sample -- "C:\docs\informe.docx"
+
+  Ejecutar la app de escritorio:
+
+    dotnet run --project app\MarkItDown.App
+
+  (O abra la solución en Visual Studio 2022 y presione F5.)
+
+
+-------------------------------------------------------------------------------
+ 3. USO DE LA LIBRERÍA
+-------------------------------------------------------------------------------
+
+    using MarkItDown;
+
+    var converter = new MarkItDownConverter();
+
+    // Desde ruta:
+    var resultado = converter.Convert(@"C:\docs\informe.docx");
+    Console.WriteLine(resultado.Markdown);
+
+    // Directo a archivo .md:
+    converter.ConvertToFile(@"C:\docs\poliza.pdf", @"C:\docs\poliza.md");
+
+    // Desde un Stream:
+    var r = converter.Convert(stream, "informe.pdf");
+
+  ConversionResult:
+    .Markdown  -> texto convertido (GitHub Flavored Markdown)
+    .Title     -> título detectado (o null)
+    .Warnings  -> advertencias no fatales
+
+  Opciones (using MarkItDown.Core;):
+    new ConversionOptions {
+        ExtractImages = true,
+        ImageOutputDirectory = @"C:\docs\imagenes",
+        ImageLinkPrefix = "imagenes/",
+        IncludePageMarkers = true,
+        DetectPdfHeadings = true,
+    }
+
+  Limpieza post-extracción (reduce tokens del LLM, intervención mínima):
+    using MarkItDown.Core;
+    var limpio = new DocumentToMarkdownCleaner().Clean(resultado.Markdown);
+
+
+-------------------------------------------------------------------------------
+ 4. CONSUMIR LAS DLL DESDE OTRO PROYECTO .NET FRAMEWORK 4.8
+-------------------------------------------------------------------------------
+
+  Si va a distribuir la carpeta de salida (bin\Release\net48), copie TODAS las
+  DLL juntas, no solo MarkItDown.dll. El cierre de dependencias incluye:
+
+    MarkItDown.dll  MarkItDown.Converters.dll  MarkItDown.Core.dll
+    DocumentFormat.OpenXml.dll  DocumentFormat.OpenXml.Framework.dll
+    System.IO.Packaging.dll
+    UglyToad.PdfPig*.dll  (varias)
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll  (solo si usa DI)
+    ...y las dependencias transitivas que NuGet haya colocado en la carpeta bin
+       (System.Memory.dll, System.Buffers.dll, etc., necesarias por PdfPig).
+
+  IMPORTANTE: a diferencia de un proyecto que usa PackageReference (que resuelve
+  todo solo), copiar DLL sueltas exige llevar TODO el contenido de bin\net48.
+  Lo más robusto es referenciar por NuGet o copiar la carpeta bin\net48 COMPLETA.
+
+  Referencia por .csproj (proyecto consumidor también net48):
+
+    <ItemGroup>
+      <Reference Include="MarkItDown">
+        <HintPath>RUTA\a\bin\Release\net48\MarkItDown.dll</HintPath>
+        <Private>true</Private>
+      </Reference>
+    </ItemGroup>
+
+
+-------------------------------------------------------------------------------
+ 5. MANEJO DE ERRORES
+-------------------------------------------------------------------------------
+
+    try { var r = converter.Convert(ruta); }
+    catch (FileNotFoundException)          { /* no existe */ }
+    catch (UnsupportedFileFormatException) { /* extensión no soportada (.doc) */ }
+    catch (MarkdownConversionException)    { /* dañado o protegido */ }
+
+
+-------------------------------------------------------------------------------
+ 6. DIFERENCIAS RESPECTO A LA VERSIÓN .NET 8 (solo internas)
+-------------------------------------------------------------------------------
+
+  El comportamiento y la API pública son idénticos. Los únicos cambios se deben
+  a que .NET Framework 4.8 no tiene algunas APIs/atributos modernos:
+
+  - DocumentToMarkdownCleaner: usa campos "static readonly Regex" con
+    RegexOptions.Compiled en lugar del atributo [GeneratedRegex] (.NET 7+).
+  - Se incluye un pequeño shim "IsExternalInit" (Shims\IsExternalInit.cs) para
+    poder usar propiedades con accesor "init".
+  - Program.cs de la app usa Application.EnableVisualStyles() /
+    SetCompatibleTextRenderingDefault(false) en vez de
+    ApplicationConfiguration.Initialize() (que es solo de .NET moderno).
+  - Program.cs del ejemplo usa un Main clásico en lugar de instrucciones de
+    nivel superior.
+  - Se sustituyeron llamadas no disponibles en net48: StartsWith(char),
+    string.Contains(string, StringComparison) y literales u8.
+
+  Las versiones de paquetes se fijaron a ramas compatibles con net48:
+    DocumentFormat.OpenXml 3.5.1, PdfPig 0.1.15,
+    Microsoft.Extensions.DependencyInjection(.Abstractions) 8.0.x,
+    xUnit 2.9.x. El paquete Microsoft.NETFramework.ReferenceAssemblies permite
+    compilar sin depender de que el targeting pack esté instalado en la máquina.
+
+===============================================================================

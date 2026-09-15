@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>LibreriaOCR</AssemblyName>
+    <RootNamespace>LibreriaOCR</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>ACSA</Authors>
+    <Description>Librería de OCR para .NET 10 (PDF, PNG, JPG, TIFF) basada en Tesseract. Español.</Description>
+    <!-- CS1591: no exigir comentario XML en cada miembro público.
+         CA1416: el rasterizado de PDF (PDFtoImage) corre en escritorio/servidor (Windows/Linux/macOS). -->
+    <NoWarn>$(NoWarn);CS1591;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PdfPig" Version="0.1.16" />
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
+    <PackageReference Include="TesseractOCR" Version="5.5.2" />
+  </ItemGroup>
+
+  <!-- Copia los archivos de idioma (.traineddata) al bin, y de ahí a quien referencie la DLL -->
+  <ItemGroup>
+    <None Update="tessdata\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

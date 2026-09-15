@@ -1,0 +1,25 @@
+<Project>
+  <!-- Este archivo detiene la búsqueda ascendente de MSBuild, aislando la solución
+       .NET Framework 4.8 del Directory.Build.props de la raíz (que es para .NET 8). -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Authors>ACSA</Authors>
+    <Product>MarkDown Framework 4.8</Product>
+    <Version>1.0.0</Version>
+    <!-- Genera automáticamente los redirects de enlace para las dependencias NuGet. -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ensambles de referencia de .NET Framework 4.8, para compilar sin depender de
+         que el targeting pack esté instalado en la máquina. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- 'System.Net.Http' viene en los using implícitos pero en net48 no está referenciado
+         por defecto; se quita para evitar un error de compilación. -->
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+</Project>

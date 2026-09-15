@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>MarkItDown.Core</RootNamespace>
+    <AssemblyName>MarkItDown.Core</AssemblyName>
+  </PropertyGroup>
+</Project>
