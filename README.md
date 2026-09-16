@@ -6,11 +6,14 @@ Monorepo de librerías internas de **ACSA** para .NET. Cada carpeta de nivel sup
 
 ## Contenido
 
-| Librería | Qué hace | Target | Estado |
-|---|---|---|---|
-| [**LibreriaOCR**](LibreriaOCR/README.md) | OCR de PDF / PNG / JPG / TIFF en español. Basada en Tesseract. Extrae texto de imágenes escaneadas y de PDFs (digitales, escaneados o mixtos). | `net10.0` | Estable |
-| [**MarkItDown**](MarkItDown/README.md) | Conversión de **.docx** y **.pdf** a Markdown listo para IA, sin conexión a internet y sin usar IA. Puerto .NET nativo de [`microsoft/markitdown`](https://github.com/microsoft/markitdown). | `net10.0` | Estable |
-| **MarkItDown (Framework 4.8)** | Misma librería que la anterior, pero portada a `.NET Framework 4.8` para aplicaciones legadas. Solución paralela dentro de [`MarkItDown/framework48/`](MarkItDown/framework48). | `net48` | Estable |
+| Librería | Qué hace | Target | Doc para IA | Estado |
+|---|---|---|---|---|
+| [**LibreriaOCR**](LibreriaOCR/README.md) | OCR de PDF / PNG / JPG / TIFF en español. Basada en Tesseract. Extrae texto de imágenes escaneadas y de PDFs (digitales, escaneados o mixtos). | `net10.0` | — | Estable |
+| [**MarkItDown**](MarkItDown/README.md) | Conversión de **.docx** y **.pdf** a Markdown listo para IA, sin conexión a internet y sin usar IA. Puerto .NET nativo de [`microsoft/markitdown`](https://github.com/microsoft/markitdown). | `net10.0` | — | Estable |
+| **MarkItDown (Framework 4.8)** | Misma librería que la anterior, pero portada a `.NET Framework 4.8` para aplicaciones legadas. Solución paralela dentro de [`MarkItDown/framework48/`](MarkItDown/framework48). | `net48` | — | Estable |
+| [**LibreriaTokens**](LibreriaTokens/README.md) | Normaliza whitespace redundante y estima tokens antes de mandar prompts a LLMs (OpenAI/Anthropic). Cero dependencias NuGet. | `net10.0` | [`AGENTS.md`](LibreriaTokens/AGENTS.md) | Estable |
+
+> **Nota para agentes IA (Copilot, Cursor, Claude, GPT…):** cuando una librería tenga un `AGENTS.md` en su carpeta, usalo como fuente autoritativa. Está escrito para vos: contiene el API completo, ejemplos copy-paste y las reglas verificadas por la prueba de mesa. `README.md` es para humanos; `AGENTS.md` es para vos.
 
 ## Requisitos
 

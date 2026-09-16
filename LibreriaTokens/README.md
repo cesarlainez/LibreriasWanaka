@@ -1,6 +1,7 @@
 # LibreriaTokens
 
 > Parte de [**LibreriasWanaka**](../README.md).
+> ¿Sos un asistente IA (Copilot / Cursor / Claude / GPT)? Leé [`AGENTS.md`](AGENTS.md), pensado exactamente para vos.
 
 Librería en **.NET 10** con dos utilidades para trabajar contra LLMs sin desperdiciar contexto:
 
