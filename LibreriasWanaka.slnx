@@ -34,4 +34,10 @@
   <Folder Name="/MarkItDown.Framework48/tests/">
     <Project Path="MarkItDown/framework48/tests/MarkItDown.Tests/MarkItDown.Tests.csproj" />
   </Folder>
+  <Folder Name="/LibreriaTokens/src/">
+    <Project Path="LibreriaTokens/src/LibreriaTokens/LibreriaTokens.csproj" />
+  </Folder>
+  <Folder Name="/LibreriaTokens/samples/">
+    <Project Path="LibreriaTokens/samples/LibreriaTokens.Demo/LibreriaTokens.Demo.csproj" />
+  </Folder>
 </Solution>
