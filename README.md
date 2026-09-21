@@ -1,5 +1,7 @@
 # LibreriasWanaka
 
+> La guía técnica y de mantenimiento de toda la solución está en [`DOCUMENTACION_SOLUCION.md`](DOCUMENTACION_SOLUCION.md).
+
 Monorepo de librerías internas de **ACSA** para .NET. Cada carpeta de nivel superior es una librería independiente, con sus propios `src/`, `samples/` y (según el caso) `tests/` y `app/`. Todas conviven bajo una única solución `LibreriasWanaka.slnx` en la raíz para que un solo Visual Studio (o `dotnet build`) las compile juntas.
 
 > Publicado en: https://github.com/cesarlainez/LibreriasWanaka
@@ -12,6 +14,7 @@ Monorepo de librerías internas de **ACSA** para .NET. Cada carpeta de nivel sup
 | [**MarkItDown**](MarkItDown/README.md) | Conversión de **.docx** y **.pdf** a Markdown listo para IA, sin conexión a internet y sin usar IA. Puerto .NET nativo de [`microsoft/markitdown`](https://github.com/microsoft/markitdown). | `net10.0` | — | Estable |
 | **MarkItDown (Framework 4.8)** | Misma librería que la anterior, pero portada a `.NET Framework 4.8` para aplicaciones legadas. Solución paralela dentro de [`MarkItDown/framework48/`](MarkItDown/framework48). | `net48` | — | Estable |
 | [**LibreriaTokens**](LibreriaTokens/README.md) | Normaliza whitespace redundante y estima tokens antes de mandar prompts a LLMs (OpenAI/Anthropic). Cero dependencias NuGet. | `net10.0` | [`AGENTS.md`](LibreriaTokens/AGENTS.md) | Estable |
+| [**LibreriaQR**](LibreriaQR/README.md) | Genera códigos QR de los 13 tipos nativos (URL, texto, teléfono, SMS, WiFi, vCard, MECARD, correo, GPS, evento, 2FA, WhatsApp/Telegram, cripto), con logo centrado y salida PNG/Base64/data URI. Sin System.Drawing ni binarios nativos. | `net10.0` | [`AGENTS.md`](LibreriaQR/AGENTS.md) | Estable |
 
 > **Nota para agentes IA (Copilot, Cursor, Claude, GPT…):** cuando una librería tenga un `AGENTS.md` en su carpeta, usalo como fuente autoritativa. Está escrito para vos: contiene el API completo, ejemplos copy-paste y las reglas verificadas por la prueba de mesa. `README.md` es para humanos; `AGENTS.md` es para vos.
 

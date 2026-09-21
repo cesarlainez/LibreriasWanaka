@@ -40,4 +40,11 @@
   <Folder Name="/LibreriaTokens/samples/">
     <Project Path="LibreriaTokens/samples/LibreriaTokens.Demo/LibreriaTokens.Demo.csproj" />
   </Folder>
+  <Folder Name="/LibreriaQR/src/">
+    <Project Path="LibreriaQR/src/LibreriaQR/LibreriaQR.csproj" />
+  </Folder>
+  <Folder Name="/LibreriaQR/samples/">
+    <Project Path="LibreriaQR/samples/LibreriaQR.Demo/LibreriaQR.Demo.csproj" />
+    <Project Path="LibreriaQR/samples/LibreriaQR.WinFormsTester/LibreriaQR.WinFormsTester.csproj" />
+  </Folder>
 </Solution>
