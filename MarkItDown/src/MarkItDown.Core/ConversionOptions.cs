@@ -27,4 +27,10 @@ public sealed class ConversionOptions
     /// y convertirlos en encabezados Markdown. Si es false, todo el texto se emite como párrafos.
     /// </summary>
     public bool DetectPdfHeadings { get; set; } = true;
+
+    /// <summary>
+    /// En HTML, si es true (predeterminado) los enlaces se emiten como <c>[texto](url)</c>; si es false
+    /// solo se conserva el texto (útil para prompts: los correos traen URLs de rastreo muy largas).
+    /// </summary>
+    public bool IncludeLinkUrls { get; set; } = true;
 }

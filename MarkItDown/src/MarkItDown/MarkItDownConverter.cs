@@ -1,4 +1,5 @@
 using MarkItDown.Converters.Docx;
+using MarkItDown.Converters.Html;
 using MarkItDown.Converters.Pdf;
 using MarkItDown.Core;
 
@@ -23,9 +24,9 @@ public sealed class MarkItDownConverter
     private volatile IDocumentConverter[] _converters;
     private readonly object _writeLock = new();
 
-    /// <summary>Crea el convertidor con los formatos integrados: Word (.docx) y PDF (.pdf).</summary>
+    /// <summary>Crea el convertidor con los formatos integrados: Word (.docx), PDF (.pdf) y HTML (.html, .htm).</summary>
     public MarkItDownConverter()
-        : this(new IDocumentConverter[] { new DocxToMarkdownConverter(), new PdfToMarkdownConverter() })
+        : this(new IDocumentConverter[] { new DocxToMarkdownConverter(), new PdfToMarkdownConverter(), new HtmlToMarkdownConverter() })
     {
     }
 
