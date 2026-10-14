@@ -3,7 +3,7 @@
 Documento de referencia para mantener y ampliar el monorepo de librerías internas de ACSA.
 Describe el estado comprobado de la solución, sus requisitos, convenciones y la forma esperada
 de agregar nuevos proyectos. Se creó el **20 de septiembre de 2026** y se revisó por última vez
-el **14 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y auditoría NuGet).
+el **13 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y auditoría NuGet).
 
 > Este documento es la guía técnica de la solución. Cada librería debe conservar además su
 > propio `README.md` con el API, ejemplos y limitaciones específicas. Si una librería tiene
@@ -32,7 +32,7 @@ el **14 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y 
 `LibreriasWanaka.slnx` registra todos los proyectos de `LibreriaOCR`, `MarkItDown` (net10 y
 net48), `LibreriaTokens` y `LibreriaQR`. Todas las carpetas están bajo control de versiones:
 `LibreriaQR` entró en el commit `e078299` (20/09/2026) junto con su entrada en el `.slnx`, y esta
-guía en `ab15f0c` (13/10/2026). Al 14/10/2026 el árbol de trabajo no tiene cambios pendientes.
+guía en `ab15f0c` (13/10/2026). Al 13/10/2026 el árbol de trabajo no tiene cambios pendientes.
 
 No se encontró `global.json`, `Directory.Packages.props` ni `NuGet.config` en la raíz. Por lo
 tanto, el SDK seleccionado por defecto es el instalado en la máquina y las versiones NuGet se
@@ -374,7 +374,7 @@ distribución de DLL sueltas empiecen a ser difíciles de controlar.
   dotnet list .\LibreriasWanaka.slnx package --outdated
   ```
 
-**Estado de la auditoría al 14/10/2026:** el único paquete vulnerable es
+**Estado de la auditoría al 13/10/2026:** el único paquete vulnerable es
 `SixLabors.ImageSharp 2.1.13`, en `LibreriaQR` y sus dos demos (ver §4.2). El resto de los
 proyectos no tiene paquetes vulnerables.
 
@@ -389,4 +389,4 @@ al README o historial de la librería correspondiente.
 | 2026-09-20 | Creación de esta guía técnica. Inventario de OCR, QR, Tokens, MarkItDown net10 y MarkItDown net48; documentados requisitos, capas y reglas de ampliación. |
 | 2026-09-20 | Se establece como obligatorio un demo WinForms por librería, con cobertura de todas sus opciones públicas y parametrizables. |
 | 2026-10-04 | MarkItDown (net10): convertidor HTML a Markdown pensado para correos, con AngleSharp 1.8.3. |
-| 2026-10-14 | Revisión de la guía contra el repositorio. LibreriaQR ya está versionada y tiene demo WinForms. Se documentan el convertidor HTML, el aviso de seguridad de ImageSharp 2.1.13 (sin corrección en la línea Apache), la nota sobre el runtime del SDK y el comando de auditoría. |
+| 2026-10-13 | Revisión de la guía contra el repositorio. LibreriaQR ya está versionada y tiene demo WinForms. Se documentan el convertidor HTML, el aviso de seguridad de ImageSharp 2.1.13 (sin corrección en la línea Apache), la nota sobre el runtime del SDK y el comando de auditoría. |
