@@ -1,8 +1,9 @@
 # Documentación técnica de la solución LibreriasWanaka
 
 Documento de referencia para mantener y ampliar el monorepo de librerías internas de ACSA.
-Describe el estado comprobado de la solución al **20 de septiembre de 2026**, sus requisitos,
-convenciones y la forma esperada de agregar nuevos proyectos.
+Describe el estado comprobado de la solución, sus requisitos, convenciones y la forma esperada
+de agregar nuevos proyectos. Se creó el **20 de septiembre de 2026** y se revisó por última vez
+el **14 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y auditoría NuGet).
 
 > Este documento es la guía técnica de la solución. Cada librería debe conservar además su
 > propio `README.md` con el API, ejemplos y limitaciones específicas. Si una librería tiene
@@ -28,11 +29,10 @@ convenciones y la forma esperada de agregar nuevos proyectos.
 
 ### 1.1 Estado del repositorio
 
-La solución registrada contiene proyectos de `LibreriaOCR`, `MarkItDown`, `LibreriaTokens` y,
-en el árbol de trabajo actual, entradas para `LibreriaQR`. La carpeta `LibreriaQR` continúa sin
-seguimiento de Git y la modificación de `LibreriasWanaka.slnx` también está pendiente de
-confirmación. Se documenta para que la discrepancia sea visible; no se modifican ni se agregan
-archivos al control de versiones automáticamente.
+`LibreriasWanaka.slnx` registra todos los proyectos de `LibreriaOCR`, `MarkItDown` (net10 y
+net48), `LibreriaTokens` y `LibreriaQR`. Todas las carpetas están bajo control de versiones:
+`LibreriaQR` entró en el commit `e078299` (20/09/2026) junto con su entrada en el `.slnx`, y esta
+guía en `ab15f0c` (13/10/2026). Al 14/10/2026 el árbol de trabajo no tiene cambios pendientes.
 
 No se encontró `global.json`, `Directory.Packages.props` ni `NuGet.config` en la raíz. Por lo
 tanto, el SDK seleccionado por defecto es el instalado en la máquina y las versiones NuGet se
@@ -49,6 +49,11 @@ La máquina usada para verificar la solución tiene:
 - Runtime principal para esta solución: `Microsoft.NETCore.App 10.0.x`.
 - Para WinForms: `Microsoft.WindowsDesktop.App 10.0.x`.
 - Para la variante heredada: paquete `Microsoft.NETFramework.ReferenceAssemblies 1.0.3`.
+
+El SDK 10.0.302 trae el runtime 10.0.10 (julio de 2026). Desde entonces Microsoft publicó los
+parches de seguridad 10.0.11, 10.0.12 y 10.0.13; este último salió el 13/10/2026 con el SDK
+10.0.402. Las librerías no fijan runtime, pero una aplicación *self-contained* que las consuma
+empaqueta el runtime del SDK que la publica. Ver §9.
 
 El requisito de compilación recomendado es instalar el SDK de .NET 10 más reciente disponible,
 manteniendo el mismo major que los proyectos `net10.0`. Para proyectos `net48` se requiere un
@@ -75,8 +80,10 @@ Librerias/
 │   ├── src/LibreriaOCR/             ← biblioteca
 │   └── samples/                     ← consola y WinForms
 ├── LibreriaQR/
-│   ├── src/LibreriaQR/              ← biblioteca agregada en el árbol de trabajo
-│   └── samples/LibreriaQR.Demo/     ← demo existente; pendiente de migrar a WinForms
+│   ├── README.md
+│   ├── AGENTS.md
+│   ├── src/LibreriaQR/              ← biblioteca
+│   └── samples/                     ← consola y WinForms (LibreriaQR.WinFormsTester)
 ├── LibreriaTokens/
 │   ├── README.md
 │   ├── AGENTS.md
@@ -130,12 +137,27 @@ configurar idiomas, ruta de datos, DPI, concurrencia y reglas de PDF mediante `O
 | Proyecto | Target | Tipo | Responsabilidad |
 |---|---|---|---|
 | `LibreriaQR/src/LibreriaQR` | `net10.0` | Biblioteca | Generación parametrizable de códigos QR, payloads tipados, logo y salidas PNG/base64/data-uri |
-| `LibreriaQR/samples/LibreriaQR.Demo` | `net10.0` | Consola | Demo existente para pruebas manuales; debe complementarse o migrarse a WinForms para cumplir el estándar de la solución |
+| `LibreriaQR/samples/LibreriaQR.Demo` | `net10.0` | Consola | Demo para pruebas manuales |
+| `LibreriaQR/samples/LibreriaQR.WinFormsTester` | `net10.0-windows` | WinForms | Prueba manual desde escritorio (demo obligatorio de la solución) |
 
 Dependencias directas: `QRCoder 1.8.0` y `SixLabors.ImageSharp 2.1.13`. La biblioteca está
 organizada alrededor de `ContenidoQR`, tipos de contenido, `OpcionesQR`, `OpcionesLogo`, nivel
-de corrección y `ResultadoQR`. La entrada de esta librería en el `.slnx` está pendiente de
-confirmación junto con la carpeta que actualmente no tiene seguimiento de Git.
+de corrección y `ResultadoQR`. El API completo está en `LibreriaQR/AGENTS.md` y el `README.md`.
+
+> **Aviso de seguridad (desde el 07/10/2026).** `SixLabors.ImageSharp 2.1.13` tiene 3 avisos
+> altos y 2 moderados: GHSA-j3p4-wp97-rph4, GHSA-j9gm-c75j-xc9q, GHSA-jjfr-hcj7-qf5w,
+> GHSA-gwg2-r3hj-4w44 y GHSA-wmxv-xphr-5c9g. Afectan el análisis de perfiles ICC, la
+> ecualización de histograma y los codificadores y decodificadores TIFF. Solo los corrige la
+> **4.1.2**, con licencia *Six Labors Split*, que puede exigir licencia comercial. La línea 2.x
+> (Apache-2.0) no tiene corrección. Cada consumidor recibe el aviso NU1902/NU1903 al compilar.
+>
+> - **Exposición:** la librería dibuja el QR y carga el logo que le pasa el consumidor con
+>   `Image.Load`, que detecta el formato. Por eso un logo TIFF o con perfil ICC manipulado sí
+>   llega a los decodificadores vulnerables. El riesgo práctico está en aceptar logos de origen no
+>   confiable. Sin logo, solo se codifica PNG, que no está entre los componentes afectados.
+> - **Caminos para cerrarlo:** comprar la licencia y subir a 4.x, o reemplazar ImageSharp (por
+>   ejemplo `PngByteQRCode` de QRCoder sin logo, o SkiaSharp para la composición).
+> - **HabitAI** quitó su referencia a LibreriaQR el 13/10/2026: no la usaba.
 
 ### 4.3 LibreriaTokens
 
@@ -153,14 +175,15 @@ La estimación de tokens es aproximada, no debe utilizarse como medición de fac
 | Proyecto | Target | Tipo | Responsabilidad |
 |---|---|---|---|
 | `MarkItDown/src/MarkItDown.Core` | `net10.0` | Núcleo | Contratos, opciones, resultados, limpieza y excepciones |
-| `MarkItDown/src/MarkItDown.Converters` | `net10.0` | Infraestructura | Convertidores DOCX y PDF a Markdown |
+| `MarkItDown/src/MarkItDown.Converters` | `net10.0` | Infraestructura | Convertidores DOCX, PDF y HTML a Markdown (HTML pensado para correos, desde el 04/10/2026) |
 | `MarkItDown/src/MarkItDown` | `net10.0` | Fachada | API pública `MarkItDownConverter` y registro opcional en DI |
 | `MarkItDown/app/MarkItDown.App` | `net10.0-windows7.0` | WinForms | Aplicación de escritorio |
 | `MarkItDown/samples/MarkItDown.Sample` | `net10.0` | Consola | Ejemplo de uso |
 | `MarkItDown/tests/MarkItDown.Tests` | `net10.0` | xUnit | Pruebas de conversión, fachada, limpieza y regresiones |
 
-Dependencias de producción: `DocumentFormat.OpenXml 3.5.1`, `PdfPig 0.1.15` y
-`Microsoft.Extensions.DependencyInjection.Abstractions 10.0.10`. La configuración común de
+Dependencias de producción: `DocumentFormat.OpenXml 3.5.1`, `PdfPig 0.1.15`, `AngleSharp 1.8.3`
+(convertidor HTML) y `Microsoft.Extensions.DependencyInjection.Abstractions 10.0.10`. El
+convertidor HTML solo existe en esta variante: `framework48` no lo tiene. La configuración común de
 esta variante está en `MarkItDown/Directory.Build.props`.
 
 ### 4.5 MarkItDown para .NET Framework 4.8
@@ -344,6 +367,16 @@ distribución de DLL sueltas empiecen a ser difíciles de controlar.
   copiarse y comportamiento esperado cuando falten.
 - No cambiar target framework, proveedor principal, contrato público o esquema de carpetas sin
   actualizar esta guía y el README afectado.
+- Auditar con regularidad, y siempre tras el parche mensual de .NET (segundo martes):
+
+  ```powershell
+  dotnet list .\LibreriasWanaka.slnx package --vulnerable --include-transitive
+  dotnet list .\LibreriasWanaka.slnx package --outdated
+  ```
+
+**Estado de la auditoría al 14/10/2026:** el único paquete vulnerable es
+`SixLabors.ImageSharp 2.1.13`, en `LibreriaQR` y sus dos demos (ver §4.2). El resto de los
+proyectos no tiene paquetes vulnerables.
 
 ## 10. Registro de cambios de la solución
 
@@ -355,3 +388,5 @@ al README o historial de la librería correspondiente.
 |---|---|
 | 2026-09-20 | Creación de esta guía técnica. Inventario de OCR, QR, Tokens, MarkItDown net10 y MarkItDown net48; documentados requisitos, capas y reglas de ampliación. |
 | 2026-09-20 | Se establece como obligatorio un demo WinForms por librería, con cobertura de todas sus opciones públicas y parametrizables. |
+| 2026-10-04 | MarkItDown (net10): convertidor HTML a Markdown pensado para correos, con AngleSharp 1.8.3. |
+| 2026-10-14 | Revisión de la guía contra el repositorio. LibreriaQR ya está versionada y tiene demo WinForms. Se documentan el convertidor HTML, el aviso de seguridad de ImageSharp 2.1.13 (sin corrección en la línea Apache), la nota sobre el runtime del SDK y el comando de auditoría. |
