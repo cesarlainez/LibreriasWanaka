@@ -1,7 +1,6 @@
 using LibreriaQR;
 using LibreriaQR.Contenidos;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 
 // Carpeta de salida: primer argumento, o ./qr-salida junto al ejecutable.
 var salida = args.Length > 0 ? args[0] : Path.Combine(AppContext.BaseDirectory, "qr-salida");
@@ -149,10 +148,10 @@ return fallas == 0 ? 0 : 2;
 static byte[] CrearLogoDePrueba()
 {
     // Logo de prueba: cuadrado azul ACSA. Sustituyalo por su logotipo real.
-    using var img = new Image<Rgba32>(160, 160, Color.ParseHex("003A84").ToPixel<Rgba32>());
-    using var ms = new MemoryStream();
-    img.SaveAsPng(ms);
-    return ms.ToArray();
+    using var img = new SKBitmap(160, 160);
+    img.Erase(new SKColor(0x00, 0x3A, 0x84));
+    using var datos = img.Encode(SKEncodedImageFormat.Png, 100);
+    return datos.ToArray();
 }
 
 static string Recortar(string s) => s.Length <= 60 ? s : s[..60] + "...";

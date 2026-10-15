@@ -18,12 +18,13 @@
 
   <ItemGroup>
     <!-- QRCoder: algoritmo QR (Reed-Solomon, enmascarado) + generadores de payload. Sin binarios nativos.
-         SixLabors.ImageSharp: render del mapa de bits y composicion del logo. 100% gestionado (sin
-         System.Drawing ni libs nativas), multiplataforma. Se ancla en la ultima 2.1.x porque esa linea
-         conserva la licencia Apache-2.0 (la 3.x cambio a la Six Labors Split License, de pago para
-         empresas con facturacion alta). -->
-    <PackageReference Include="QRCoder" Version="1.8.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.13" />
+         SkiaSharp (MIT): render del mapa de bits y composicion del logo, sin System.Drawing. Reemplaza a
+         SixLabors.ImageSharp 2.1.x, que tenia vulnerabilidades sin corregir en la linea Apache-2.0 (la
+         correccion solo existe en 3.x/4.x, de pago para empresas con facturacion alta). SkiaSharp trae los
+         binarios nativos de Windows y macOS; NativeAssets.Linux.NoDependencies cubre Linux y contenedores. -->
+    <PackageReference Include="QRCoder" Version="1.8.1" />
+    <PackageReference Include="SkiaSharp" Version="4.153.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
   </ItemGroup>
 
 </Project>

@@ -140,24 +140,30 @@ configurar idiomas, ruta de datos, DPI, concurrencia y reglas de PDF mediante `O
 | `LibreriaQR/samples/LibreriaQR.Demo` | `net10.0` | Consola | Demo para pruebas manuales |
 | `LibreriaQR/samples/LibreriaQR.WinFormsTester` | `net10.0-windows` | WinForms | Prueba manual desde escritorio (demo obligatorio de la solución) |
 
-Dependencias directas: `QRCoder 1.8.0` y `SixLabors.ImageSharp 2.1.13`. La biblioteca está
+Dependencias directas: `QRCoder 1.8.1`, `SkiaSharp 4.153.1` y
+`SkiaSharp.NativeAssets.Linux.NoDependencies 4.153.1`. La biblioteca está
 organizada alrededor de `ContenidoQR`, tipos de contenido, `OpcionesQR`, `OpcionesLogo`, nivel
 de corrección y `ResultadoQR`. El API completo está en `LibreriaQR/AGENTS.md` y el `README.md`.
 
-> **Aviso de seguridad (desde el 07/10/2026).** `SixLabors.ImageSharp 2.1.13` tiene 3 avisos
-> altos y 2 moderados: GHSA-j3p4-wp97-rph4, GHSA-j9gm-c75j-xc9q, GHSA-jjfr-hcj7-qf5w,
-> GHSA-gwg2-r3hj-4w44 y GHSA-wmxv-xphr-5c9g. Afectan el análisis de perfiles ICC, la
-> ecualización de histograma y los codificadores y decodificadores TIFF. Solo los corrige la
-> **4.1.2**, con licencia *Six Labors Split*, que puede exigir licencia comercial. La línea 2.x
-> (Apache-2.0) no tiene corrección. Cada consumidor recibe el aviso NU1902/NU1903 al compilar.
+**Dependencia nativa.** SkiaSharp usa `libSkiaSharp`, que NuGet copia en
+`runtimes/<rid>/native/`: `win-x86`, `win-x64`, `win-arm64`, `osx` y los `linux-*` (glibc y musl,
+x64, arm, arm64, entre otros). El paquete `NativeAssets.Linux.NoDependencies` no requiere
+fontconfig, así que sirve en contenedores mínimos. Si falta el binario del RID donde corre la
+aplicación, la primera generación lanza `TypeInitializationException` (con `DllNotFoundException`
+interna). Una publicación con RID fijo copia solo el binario de ese RID.
+
+> **Historial de seguridad.** Hasta el 14/10/2026 el render usaba `SixLabors.ImageSharp 2.1.13`,
+> con 3 avisos altos y 2 moderados (GHSA-j3p4-wp97-rph4, GHSA-j9gm-c75j-xc9q, GHSA-jjfr-hcj7-qf5w,
+> GHSA-gwg2-r3hj-4w44 y GHSA-wmxv-xphr-5c9g) sin corrección en la línea Apache-2.0. La corrección
+> (3.x/4.x) tiene licencia *Six Labors Split*, de pago para empresas grandes, así que se reemplazó
+> por SkiaSharp (MIT) sin cambiar la API pública. Verificación: los 17 PNG de la demo y los casos
+> de fondo transparente, alfa y hex corto salen idénticos píxel a píxel. Con logo, el patrón QR y
+> el recuadro son idénticos y el logo difiere en promedio menos de 4/255 por el remuestreo. El
+> decodificador de logos ya no acepta TIFF.
 >
-> - **Exposición:** la librería dibuja el QR y carga el logo que le pasa el consumidor con
->   `Image.Load`, que detecta el formato. Por eso un logo TIFF o con perfil ICC manipulado sí
->   llega a los decodificadores vulnerables. El riesgo práctico está en aceptar logos de origen no
->   confiable. Sin logo, solo se codifica PNG, que no está entre los componentes afectados.
-> - **Caminos para cerrarlo:** comprar la licencia y subir a 4.x, o reemplazar ImageSharp (por
->   ejemplo `PngByteQRCode` de QRCoder sin logo, o SkiaSharp para la composición).
 > - **HabitAI** quitó su referencia a LibreriaQR el 13/10/2026: no la usaba.
+> - QRCoder trae de forma transitiva `System.Drawing.Common 6.0.0` (dependencia de su build
+>   net6.0). La librería no lo usa.
 
 ### 4.3 LibreriaTokens
 
@@ -181,8 +187,10 @@ La estimación de tokens es aproximada, no debe utilizarse como medición de fac
 | `MarkItDown/samples/MarkItDown.Sample` | `net10.0` | Consola | Ejemplo de uso |
 | `MarkItDown/tests/MarkItDown.Tests` | `net10.0` | xUnit | Pruebas de conversión, fachada, limpieza y regresiones |
 
-Dependencias de producción: `DocumentFormat.OpenXml 3.5.1`, `PdfPig 0.1.15`, `AngleSharp 1.8.3`
-(convertidor HTML) y `Microsoft.Extensions.DependencyInjection.Abstractions 10.0.10`. El
+Dependencias de producción: `DocumentFormat.OpenXml 3.5.1`, `PdfPig 0.1.16`, `AngleSharp 1.8.4`
+(convertidor HTML) y `Microsoft.Extensions.DependencyInjection.Abstractions 10.0.13`. Las pruebas
+usan xUnit 2.9.3, `xunit.runner.visualstudio 4.0.1`, `Microsoft.NET.Test.Sdk 18.11.0` y
+`coverlet.collector 10.1.0`. El
 convertidor HTML solo existe en esta variante: `framework48` no lo tiene. La configuración común de
 esta variante está en `MarkItDown/Directory.Build.props`.
 
@@ -203,8 +211,10 @@ framework48/
 
 `framework48/Directory.Build.props` fija `TargetFramework=net48`, habilita el lenguaje moderno,
 agrega `Microsoft.NETFramework.ReferenceAssemblies 1.0.3` y genera binding redirects. Sus
-dependencias principales están fijadas a `DocumentFormat.OpenXml 3.5.1`, `PdfPig 0.1.15` y
-`Microsoft.Extensions.DependencyInjection(.Abstractions) 8.0.x`; las pruebas usan xUnit 2.9.x.
+dependencias principales están fijadas a `DocumentFormat.OpenXml 3.5.1`, `PdfPig 0.1.16` y
+`Microsoft.Extensions.DependencyInjection(.Abstractions) 10.0.13` (la 10.x sigue publicando
+builds para .NET Framework); las pruebas usan xUnit 2.9.3, `xunit.runner.visualstudio 4.0.1` y
+`Microsoft.NET.Test.Sdk 18.11.0`.
 
 La variante existe para aplicaciones legadas. No se debe mezclar una referencia `net48` con una
 aplicación `net10.0`; si una funcionalidad debe existir en ambas, se implementa y verifica en las
@@ -374,9 +384,8 @@ distribución de DLL sueltas empiecen a ser difíciles de controlar.
   dotnet list .\LibreriasWanaka.slnx package --outdated
   ```
 
-**Estado de la auditoría al 13/10/2026:** el único paquete vulnerable es
-`SixLabors.ImageSharp 2.1.13`, en `LibreriaQR` y sus dos demos (ver §4.2). El resto de los
-proyectos no tiene paquetes vulnerables.
+**Estado de la auditoría al 14/10/2026:** ningún proyecto tiene paquetes vulnerables (incluidos
+los transitivos) ni desactualizados. `LibreriaQR` dejó ImageSharp por SkiaSharp (ver §4.2).
 
 ## 10. Registro de cambios de la solución
 
@@ -389,4 +398,5 @@ al README o historial de la librería correspondiente.
 | 2026-09-20 | Creación de esta guía técnica. Inventario de OCR, QR, Tokens, MarkItDown net10 y MarkItDown net48; documentados requisitos, capas y reglas de ampliación. |
 | 2026-09-20 | Se establece como obligatorio un demo WinForms por librería, con cobertura de todas sus opciones públicas y parametrizables. |
 | 2026-10-04 | MarkItDown (net10): convertidor HTML a Markdown pensado para correos, con AngleSharp 1.8.3. |
+| 2026-10-14 | Actualización de NuGet. LibreriaQR reemplaza `SixLabors.ImageSharp 2.1.13` (vulnerable) por `SkiaSharp 4.153.1` y sube QRCoder a 1.8.1. MarkItDown (net10 y net48) sube PdfPig a 0.1.16, AngleSharp a 1.8.4, DI a 10.0.13, xUnit a 2.9.3, runner a 4.0.1, Test.Sdk a 18.11.0 y coverlet a 10.1.0. Mismas pruebas en verde: 79 en net10 y 72 en net48. |
 | 2026-10-13 | Revisión de la guía contra el repositorio. LibreriaQR ya está versionada y tiene demo WinForms. Se documentan el convertidor HTML, el aviso de seguridad de ImageSharp 2.1.13 (sin corrección en la línea Apache), la nota sobre el runtime del SDK y el comando de auditoría. |

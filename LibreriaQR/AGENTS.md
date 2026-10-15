@@ -13,8 +13,8 @@
 | Target framework | `net10.0` |
 | Nullable | `enable` |
 | Documentación XML | generada (visible en IntelliSense) |
-| Dependencias NuGet | `QRCoder` 1.8.0 y `SixLabors.ImageSharp` 2.1.13 |
-| Nativas / System.Drawing | **ninguna** (ImageSharp es 100 % gestionado; corre en Windows/Linux/macOS) |
+| Dependencias NuGet | `QRCoder` 1.8.1, `SkiaSharp` 4.153.1 y `SkiaSharp.NativeAssets.Linux.NoDependencies` 4.153.1 |
+| Nativas / System.Drawing | `libSkiaSharp` nativo en `runtimes/<rid>/native/` (Windows x86/x64/arm64, Linux glibc y musl, macOS). Sin System.Drawing |
 | Distribución | `ProjectReference` dentro del monorepo `LibreriasWanaka`, o `LibreriaQR.dll` + sus NuGet |
 | Thread-safety | `GeneradorQR` no tiene estado; una instancia es segura entre hilos (usable como singleton) |
 | Excepciones | `QrContenidoInvalidoException` (datos inválidos), `QrLogoInvalidoException` (logo ilegible), ambas derivan de `QrException` |
@@ -250,7 +250,8 @@ var rEth = g.Generar(eth);
 - ❌ Que el color acepte nombres (`"red"`). **Solo hex** (`#RRGGBB` o `#RRGGBBAA`); un valor inválido lanza `QrContenidoInvalidoException`.
 - ❌ Poner `Logo.Proporcion` > 0.35. Se recorta a 0.35; por encima de ~0.30 el QR puede no escanearse aun con corrección Máxima.
 - ❌ Que `TamanoPx` dé exactamente ese tamaño. El lado final es **múltiplo entero de módulos** (puede quedar algo por debajo del pedido).
-- ❌ Que `ImageSharp` 3.x sirva igual. Se ancla en **2.1.x** a propósito (licencia Apache-2.0; la 3.x es de pago para empresas grandes).
+- ❌ Que la librería use `ImageSharp`. **Usa SkiaSharp** desde el 14/10/2026: ImageSharp 2.1.x tenía vulnerabilidades sin corregir y la 3.x/4.x es de pago para empresas grandes. No volver a agregarlo.
+- ❌ Publicar sin la carpeta `runtimes/`. Sin `libSkiaSharp` del RID correcto, generar un QR lanza `TypeInitializationException` (con `DllNotFoundException` interna).
 
 ## 8. Trazabilidad
 

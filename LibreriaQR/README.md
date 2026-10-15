@@ -4,8 +4,8 @@ Generación de **códigos QR** para .NET 10 con los **13 tipos de contenido** qu
 
 - **Namespace / assembly:** `LibreriaQR`
 - **Target:** `net10.0`
-- **Dependencias NuGet:** `QRCoder` (algoritmo QR + payloads) y `SixLabors.ImageSharp` **2.1.x** (render y logo, 100 % gestionado, sin System.Drawing ni binarios nativos, licencia Apache-2.0).
-- **Multiplataforma:** sí (Windows / Linux / macOS). No usa System.Drawing.
+- **Dependencias NuGet:** `QRCoder` (algoritmo QR + payloads) y `SkiaSharp` (render y logo, licencia MIT), más `SkiaSharp.NativeAssets.Linux.NoDependencies` para Linux y contenedores. SkiaSharp usa un binario nativo (`libSkiaSharp`) que NuGet copia solo en `runtimes/<rid>/native/`.
+- **Multiplataforma:** sí (Windows x86/x64/arm64, Linux glibc y musl, macOS). No usa System.Drawing.
 - **Thread-safe:** `GeneradorQR` no guarda estado; una instancia sirve para toda la app.
 
 > ¿Sos un asistente IA? Usá [`AGENTS.md`](AGENTS.md): tiene el API completo y ejemplos copy-paste.
@@ -18,7 +18,7 @@ Dentro del monorepo `LibreriasWanaka` ya está en la solución. Desde otro proye
 dotnet add MiProyecto.csproj reference "..\LibreriasWanaka\LibreriaQR\src\LibreriaQR\LibreriaQR.csproj"
 ```
 
-O como DLL compilada: `LibreriaQR.dll` + sus dependencias NuGet (`QRCoder`, `SixLabors.ImageSharp`) restauradas en el consumidor. Lo más limpio es el `ProjectReference`.
+O como DLL compilada: `LibreriaQR.dll` + sus dependencias NuGet (`QRCoder`, `SkiaSharp`, `SkiaSharp.NativeAssets.Linux.NoDependencies`) restauradas en el consumidor, incluida la carpeta `runtimes/` con `libSkiaSharp`. Lo más limpio es el `ProjectReference`.
 
 ## Uso en 30 segundos
 
@@ -139,8 +139,11 @@ Ventana completa para elegir cualquiera de los 13 tipos, rellenar sus campos, aj
 - El QR de **MECARD** se genera en el formato estándar de una sola línea (`MECARD:...;;`), no en el formato propio de QRCoder, para que los lectores lo reconozcan como "agregar contacto".
 - **Telegram** genera `https://t.me/<usuario>` (no admite mensaje precargado); **WhatsApp** sí precarga el mensaje.
 - **Ethereum** usa EIP-681 (`ethereum:<dirección>?value=<wei>`); Bitcoin/BCH/Litecoin usan BIP21 (`bitcoin:<dirección>?amount=...`).
-- El render escala con vecino más cercano (bordes nítidos, sin difuminado). El tamaño final siempre es múltiplo entero de módulos.
+- El render dibuja cada módulo como un bloque exacto de píxeles (bordes nítidos, sin difuminado). El tamaño final siempre es múltiplo entero de módulos.
+- El logo se reduce promediando por área (sin aliasing) y se amplía con bicúbico Catmull-Rom. Formatos de logo: PNG, JPG, BMP, GIF y WebP (no TIFF).
 
 ## Licencia
 
-Uso interno de ACSA. `QRCoder` (MIT) y `SixLabors.ImageSharp` 2.1.x (Apache-2.0) mantienen su licencia original.
+Uso interno de ACSA. `QRCoder` (MIT) y `SkiaSharp` (MIT) mantienen su licencia original.
+
+Hasta el 14/10/2026 el render usaba `SixLabors.ImageSharp` 2.1.13. Se reemplazó porque esa versión tiene vulnerabilidades sin corregir en la línea Apache-2.0 y la corrección (3.x/4.x) es de pago para empresas grandes. La API pública no cambió y los QR sin logo salen idénticos píxel a píxel.

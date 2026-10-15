@@ -192,7 +192,7 @@ Usala cuando tu consumidor sea:
 - Un **Web Forms** o **WCF** legado.
 - Un **servicio Windows** que aún no migró a .NET moderno.
 
-El API pública (`MarkItDownConverter`, `ConversionOptions`, `ConversionResult`) es idéntica a la de `net10`; solo cambian las dependencias transitivas de DI (`Microsoft.Extensions.DependencyInjection.Abstractions 8.0.2`).
+El API pública (`MarkItDownConverter`, `ConversionOptions`, `ConversionResult`) es idéntica a la de `net10`; comparte también la versión de DI (`Microsoft.Extensions.DependencyInjection.Abstractions 10.0.13`, que sigue soportando .NET Framework).
 
 ## Compilar y probar
 
