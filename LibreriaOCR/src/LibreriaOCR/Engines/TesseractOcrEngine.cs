@@ -70,6 +70,37 @@ public sealed class TesseractOcrEngine : IOcrEngine
         return results;
     }
 
+    /// <summary>
+    /// Reconoce una imagen de una sola página y devuelve las palabras con su caja (en píxeles) y su
+    /// confianza (0–100). Útil para localizar regiones, por ejemplo campos manuscritos = palabras de
+    /// baja confianza (lo usa <see cref="HandwritingDetector"/>).
+    /// </summary>
+    public IReadOnlyList<OcrWord> RecognizeWords(byte[] imageBytes, CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (imageBytes is null || imageBytes.Length == 0)
+            throw new ArgumentException("La imagen está vacía.", nameof(imageBytes));
+
+        cancellationToken.ThrowIfCancellationRequested();
+        using var image = TesseractOCR.Pix.Image.LoadFromMemory(imageBytes);
+        using var page = _engine.Process(image);
+
+        var words = new List<OcrWord>();
+        foreach (var block in page.Layout)
+        foreach (var paragraph in block.Paragraphs)
+        foreach (var textLine in paragraph.TextLines)
+        foreach (var word in textLine.Words)
+        {
+            if (word.BoundingBox is null) continue;
+            var bb = word.BoundingBox.Value;
+            words.Add(new OcrWord(
+                word.Text ?? string.Empty,
+                ToPercent(word.Confidence),
+                (int)bb.X1, (int)bb.Y1, (int)bb.Width, (int)bb.Height));
+        }
+        return words;
+    }
+
     /// <summary>Tesseract entrega la confianza como fracción 0–1; la convertimos a porcentaje 0–100.</summary>
     private static float ToPercent(float meanConfidence) =>
         meanConfidence <= 1f ? meanConfidence * 100f : meanConfidence;

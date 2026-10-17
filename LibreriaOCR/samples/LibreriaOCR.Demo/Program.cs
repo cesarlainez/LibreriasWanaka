@@ -6,8 +6,25 @@ Console.OutputEncoding = Encoding.UTF8;
 
 if (args.Length == 0)
 {
-    Console.WriteLine("Uso: LibreriaOCR.Demo <archivo1> [archivo2] ...");
+    Console.WriteLine("Uso: LibreriaOCR.Demo [--manuscrito] <archivo1> [archivo2] ...");
+    Console.WriteLine("  (sin flag)      extrae el texto por OCR");
+    Console.WriteLine("  --manuscrito    detecta si el documento tiene escritura a mano");
     Console.WriteLine("Formatos: PDF, PNG, JPG/JPEG, TIF/TIFF");
+    return;
+}
+
+// Modo manuscrito: primer argumento --manuscrito / -m / --hw.
+var modoManuscrito = args[0] is "--manuscrito" or "-m" or "--hw";
+var archivos = modoManuscrito ? args[1..] : args;
+if (archivos.Length == 0)
+{
+    Console.WriteLine("Falta indicar al menos un archivo.");
+    return;
+}
+
+if (modoManuscrito)
+{
+    DetectarManuscrito(archivos);
     return;
 }
 
@@ -18,7 +35,7 @@ var globalWatch = Stopwatch.StartNew();
 var ok = 0;
 var failed = 0;
 
-foreach (var path in args)
+foreach (var path in archivos)
 {
     Console.WriteLine(new string('=', 78));
     Console.WriteLine($"Archivo: {path}");
@@ -46,3 +63,33 @@ foreach (var path in args)
 globalWatch.Stop();
 Console.WriteLine(new string('=', 78));
 Console.WriteLine($"Listos: {ok}  |  Con error: {failed}  |  Tiempo total: {globalWatch.Elapsed.TotalSeconds:0.00}s");
+
+// ------------------------------------------------------------------ manuscrito
+
+static void DetectarManuscrito(string[] rutas)
+{
+    using var detector = new HandwritingDetector();
+    foreach (var path in rutas)
+    {
+        Console.WriteLine(new string('=', 78));
+        Console.WriteLine($"Archivo: {path}");
+        try
+        {
+            var r = detector.Detect(path);
+            Console.WriteLine(r.HasHandwriting
+                ? $"SÍ tiene escritura a mano | Score máx: {r.MaxScore:0.#} | " +
+                  $"Regiones: {r.Regions.Count} | Páginas: {r.Pages.Count} | Tiempo: {r.Duration.TotalSeconds:0.00}s"
+                : $"No se detectó escritura a mano | Score máx: {r.MaxScore:0.#} | " +
+                  $"Páginas: {r.Pages.Count} | Tiempo: {r.Duration.TotalSeconds:0.00}s");
+
+            foreach (var region in r.Regions.OrderByDescending(x => x.Score))
+                Console.WriteLine($"   - pág {region.PageNumber}  ·  score {region.Score:0.#}  ·  " +
+                                  $"({region.X}, {region.Y}, {region.Width}×{region.Height})");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.GetType().Name}: {ex.Message}");
+        }
+        Console.WriteLine();
+    }
+}

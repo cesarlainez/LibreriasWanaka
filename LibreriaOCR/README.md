@@ -26,8 +26,8 @@ Como DLL compilada: copiar `LibreriaOCR.dll` **junto con la carpeta `tessdata/`*
 | Proyecto | Qué es |
 |---|---|
 | `src/LibreriaOCR` | La librería (`LibreriaOCR.dll`) |
-| `samples/LibreriaOCR.Demo` | Consola de prueba (`LibreriaOCR.Demo <archivo>…`) |
-| `samples/LibreriaOCR.WinFormsTester` | App WinForms: botón para escoger documento y ver el OCR |
+| `samples/LibreriaOCR.Demo` | Consola de prueba (`LibreriaOCR.Demo [--manuscrito] <archivo>…`) |
+| `samples/LibreriaOCR.WinFormsTester` | App WinForms: botones para OCR y para detectar escritura a mano |
 
 ## Uso básico
 
@@ -81,6 +81,34 @@ foreach (var p in imgs.Pages)
 
 Las imágenes por debajo de `OcrOptions.MinEmbeddedImagePixels` (por defecto 40 000 px = ≈200×200) se ignoran para filtrar íconos y viñetas donde Tesseract solo produce ruido. Si el PDF no tiene imágenes procesables, devuelve un resultado vacío (no lanza).
 
+## Detección de escritura a mano (manuscrito)
+
+`HandwritingDetector` responde dos preguntas sobre un documento (PDF o imagen): **(a)** ¿tiene escritura a mano? y **(b)** ¿en qué regiones? Es una **heurística sin IA**: analiza la geometría de los trazos (irregularidad de altura, línea base y espaciado; trazos conectados como firmas) y, para descartar logos y gráficos, **corrobora con OCR** (la escritura a mano produce texto de baja confianza; lo impreso, alta).
+
+```csharp
+using LibreriaOCR;
+
+using var detector = new HandwritingDetector();
+HandwritingResult r = detector.Detect(@"C:\docs\solicitud-firmada.pdf");
+
+if (r.HasHandwriting)
+    foreach (var reg in r.Regions)   // cada región: página + caja + score
+        Console.WriteLine($"Pág {reg.PageNumber}: ({reg.X},{reg.Y},{reg.Width}×{reg.Height}) score {reg.Score:0.#}");
+```
+
+Admite **ruta**, **`byte[]`** y los mismos formatos que el OCR (PDF, PNG, JPG, TIFF). La corroboración con OCR usa `tessdata`; si no está disponible, cae a solo-geometría.
+
+| Opción (`HandwritingOptions`) | Por defecto | Para qué |
+|---|---|---|
+| `ScoreThreshold` | `55` | Umbral (0–100) para marcar una región como manuscrita. **Es el parámetro a calibrar.** |
+| `CorroborateWithOcr` | `true` | Confirma con OCR para descartar logos/gráficos |
+| `MaxOcrConfidenceForHandwriting` | `78` | Si la confianza OCR de la página supera esto, se asume impreso |
+| `PdfDpi` / `MaxImageSide` | `150` / `1600` | Resolución de análisis (menor = más rápido) |
+| `Languages` | `"spa"` | Idioma del OCR de corroboración |
+| `IncludeDiagnostics` | `false` | Añade las métricas a `HandwritingRegion.Diagnostics` para calibrar |
+
+> Es una heurística: conviene **calibrar `ScoreThreshold` con documentos reales**. Funciona mejor con **firmas y campos llenados a mano** que con texto corrido manuscrito.
+
 ## `OcrResult`
 
 | Miembro | Descripción |
@@ -122,10 +150,13 @@ Las imágenes por debajo de `OcrOptions.MinEmbeddedImagePixels` (por defecto 40 
 ## Probar
 
 ```bash
-# Consola
+# Consola — OCR
 dotnet run --project samples/LibreriaOCR.Demo -- "C:\ruta\documento.tif"
 
-# WinForms (botón para escoger documento)
+# Consola — detección de manuscrito
+dotnet run --project samples/LibreriaOCR.Demo -- --manuscrito "C:\ruta\solicitud.pdf"
+
+# WinForms (botones de OCR y de manuscrito)
 dotnet run --project samples/LibreriaOCR.WinFormsTester
 ```
 
@@ -146,3 +177,4 @@ Promedio ~**91 %** de confianza, ~1.5 s por página.
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) vía [TesseractOCR](https://www.nuget.org/packages/TesseractOCR) (Apache-2.0)
 - [PdfPig](https://www.nuget.org/packages/PdfPig) (Apache-2.0) — texto digital de PDF
 - [PDFtoImage](https://www.nuget.org/packages/PDFtoImage) (MIT) — rasterizado de PDF a imagen
+- [SkiaSharp](https://www.nuget.org/packages/SkiaSharp) (MIT) — análisis de imagen para la detección de manuscrito (llega transitiva vía PDFtoImage)

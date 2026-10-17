@@ -11,6 +11,7 @@ namespace LibreriaOCR.WinFormsTester;
 public sealed class MainForm : Form
 {
     private readonly Button _btnSelect;
+    private readonly Button _btnHand;
     private readonly Label _lblInfo;
     private readonly RichTextBox _txtResult;
     private readonly StatusStrip _statusStrip;
@@ -18,6 +19,7 @@ public sealed class MainForm : Form
     private readonly ToolStripProgressBar _progress;
 
     private OcrService? _ocr;
+    private HandwritingDetector? _handwriting;
 
     public MainForm()
     {
@@ -29,27 +31,38 @@ public sealed class MainForm : Form
         Font = new Font("Segoe UI", 9F);
 
         // ----- Barra superior -----
-        var top = new Panel { Dock = DockStyle.Top, Height = 96, Padding = new Padding(12) };
+        var top = new Panel { Dock = DockStyle.Top, Height = 136, Padding = new Padding(12) };
 
         _btnSelect = new Button
         {
-            Text = "📂  Seleccionar documento y procesar…",
+            Text = "📂  Seleccionar documento y procesar OCR…",
             Location = new Point(12, 12),
-            Size = new Size(340, 42),
+            Size = new Size(340, 40),
             FlatStyle = FlatStyle.System
         };
         _btnSelect.Click += OnSelectClick;
 
+        _btnHand = new Button
+        {
+            Text = "✍  Detectar escritura a mano…",
+            Location = new Point(12, 58),
+            Size = new Size(340, 36),
+            FlatStyle = FlatStyle.System
+        };
+        _btnHand.Click += OnDetectHandwritingClick;
+
         _lblInfo = new Label
         {
-            Text = "Selecciona un documento (PDF, PNG, JPG o TIFF) para extraer su texto.",
-            Location = new Point(14, 64),
+            Text = "Selecciona un documento (PDF, PNG, JPG o TIFF) para extraer su texto o " +
+                   "detectar si tiene escritura a mano.",
+            Location = new Point(14, 104),
             Size = new Size(940, 24),
             Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
             ForeColor = Color.FromArgb(70, 70, 70)
         };
 
         top.Controls.Add(_btnSelect);
+        top.Controls.Add(_btnHand);
         top.Controls.Add(_lblInfo);
 
         // ----- Área de resultado -----
@@ -78,7 +91,7 @@ public sealed class MainForm : Form
         Controls.Add(top);
         Controls.Add(_statusStrip);
 
-        FormClosed += (_, _) => _ocr?.Dispose();
+        FormClosed += (_, _) => { _ocr?.Dispose(); _handwriting?.Dispose(); };
     }
 
     private async void OnSelectClick(object? sender, EventArgs e)
@@ -98,6 +111,71 @@ public sealed class MainForm : Form
             return;
 
         await ProcessAsync(dialog.FileName);
+    }
+
+    private async void OnDetectHandwritingClick(object? sender, EventArgs e)
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Detectar escritura a mano",
+            CheckFileExists = true,
+            Filter =
+                "Documentos (PDF e imágenes)|*.pdf;*.png;*.jpg;*.jpeg;*.jpe;*.tif;*.tiff|" +
+                "Todos los archivos|*.*"
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        await DetectHandwritingAsync(dialog.FileName);
+    }
+
+    private async Task DetectHandwritingAsync(string path)
+    {
+        SetBusy(true, $"Analizando escritura a mano: {Path.GetFileName(path)}…");
+        _txtResult.Clear();
+        _lblInfo.Text = $"Archivo: {Path.GetFileName(path)}";
+
+        try
+        {
+            _handwriting ??= new HandwritingDetector();
+            var result = await Task.Run(() => _handwriting.Detect(path));
+
+            var sb = new StringBuilder();
+            sb.AppendLine(result.HasHandwriting
+                ? $"SÍ se detectó escritura a mano   (score máximo: {result.MaxScore:0.#})"
+                : $"No se detectó escritura a mano   (score máximo: {result.MaxScore:0.#})");
+            sb.AppendLine($"Regiones: {result.Regions.Count}    Páginas: {result.Pages.Count}    Tiempo: {result.Duration.TotalSeconds:0.00}s");
+            sb.AppendLine();
+
+            if (result.Regions.Count > 0)
+            {
+                sb.AppendLine("Regiones detectadas (página · score · caja x,y,ancho×alto):");
+                foreach (var r in result.Regions.OrderByDescending(r => r.Score))
+                    sb.AppendLine($"  - pág {r.PageNumber}  ·  {r.Score:0.#}  ·  ({r.X}, {r.Y}, {r.Width}×{r.Height})");
+            }
+
+            _txtResult.Text = sb.ToString();
+            _lblInfo.Text = $"Archivo: {result.FileName}     •     Manuscrito: {(result.HasHandwriting ? "SÍ" : "no")}     •     Score máx: {result.MaxScore:0.#}";
+            _status.Text = result.HasHandwriting ? "Escritura a mano detectada" : "Sin escritura a mano";
+        }
+        catch (FormatoNoSoportadoException ex)
+        {
+            ShowError("Formato no soportado", ex.Message);
+        }
+        catch (OcrException ex)
+        {
+            var detail = ex.InnerException is null ? string.Empty : $"\n\nDetalle: {ex.InnerException.Message}";
+            ShowError("Error al detectar escritura a mano", ex.Message + detail);
+        }
+        catch (Exception ex)
+        {
+            ShowError("Error inesperado", $"{ex.GetType().Name}: {ex.Message}");
+        }
+        finally
+        {
+            SetBusy(false, _status.Text);
+        }
     }
 
     private async Task ProcessAsync(string path)
@@ -168,9 +246,10 @@ public sealed class MainForm : Form
         _ => kind.ToString()
     };
 
-    private void SetBusy(bool busy, string status)
+    private void SetBusy(bool busy, string? status)
     {
         _btnSelect.Enabled = !busy;
+        _btnHand.Enabled = !busy;
         _progress.Visible = busy;
         _status.Text = status;
         UseWaitCursor = busy;

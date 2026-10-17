@@ -12,8 +12,10 @@
     <Authors>ACSA</Authors>
     <Description>Librería de OCR para .NET 10 (PDF, PNG, JPG, TIFF) basada en Tesseract. Español.</Description>
     <!-- CS1591: no exigir comentario XML en cada miembro público.
-         CA1416: el rasterizado de PDF (PDFtoImage) corre en escritorio/servidor (Windows/Linux/macOS). -->
-    <NoWarn>$(NoWarn);CS1591;CA1416</NoWarn>
+         CA1416: el rasterizado de PDF (PDFtoImage) corre en escritorio/servidor (Windows/Linux/macOS).
+         CS0618: SkiaSharp 3.x marca obsoleta SKCanvas.DrawBitmap(SKRect); la usa el reescalado del
+                 analizador de manuscrito y sigue siendo válida. -->
+    <NoWarn>$(NoWarn);CS1591;CA1416;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
