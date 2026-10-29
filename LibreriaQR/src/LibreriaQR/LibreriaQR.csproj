@@ -9,7 +9,7 @@
     <AssemblyName>LibreriaQR</AssemblyName>
     <RootNamespace>LibreriaQR</RootNamespace>
     <Version>1.0.0</Version>
-    <Authors>ACSA</Authors>
+    <Authors>WanakAI</Authors>
     <Product>LibreriaQR</Product>
     <Description>Generacion de codigos QR para .NET 10 con 13 tipos de contenido (URL, texto, telefono, SMS, WiFi, vCard, MeCard, correo, ubicacion GPS, evento, 2FA/OTP, mensajeria y criptomonedas), logo centrado y salida PNG/base64/data-uri. Espanol.</Description>
     <!-- CS1591: no exigir comentario XML en cada miembro publico. -->

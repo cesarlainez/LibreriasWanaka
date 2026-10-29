@@ -317,11 +317,11 @@ public sealed class MainForm : Form
         switch (tipo)
         {
             case TipoQR.EnlaceWeb:
-                AddTexto("url", "URL", "https://acsa.com.sv");
+                AddTexto("url", "URL", "https://ejemplo.com");
                 break;
 
             case TipoQR.TextoPlano:
-                AddTexto("texto", "Texto", "Hola desde ACSA", multi: true);
+                AddTexto("texto", "Texto", "Hola desde WanakAI", multi: true);
                 break;
 
             case TipoQR.LlamadaTelefonica:
@@ -334,7 +334,7 @@ public sealed class MainForm : Form
                 break;
 
             case TipoQR.RedWifi:
-                AddTexto("ssid", "Nombre de red (SSID)", "ACSA-Invitados");
+                AddTexto("ssid", "Nombre de red (SSID)", "WanakAI-Invitados");
                 AddTexto("password", "Contraseña", "Clave1234");
                 AddCombo("cifrado", "Cifrado", new[] { "WPA / WPA2 / WPA3", "WEP", "Sin cifrado" });
                 AddCheck("oculta", "Red oculta");
@@ -343,13 +343,13 @@ public sealed class MainForm : Form
             case TipoQR.TarjetaVCard:
                 AddTexto("nombre", "Nombre", "Cesar");
                 AddTexto("apellido", "Apellido", "Lainez");
-                AddTexto("empresa", "Empresa", "ACSA");
+                AddTexto("empresa", "Empresa", "WanakAI");
                 AddTexto("cargo", "Cargo", "TI");
                 AddTexto("telefono", "Teléfono");
                 AddTexto("movil", "Móvil", "+503 7000-0000");
                 AddTexto("teltrabajo", "Teléfono de trabajo");
-                AddTexto("correo", "Correo", "soporte@acsa.com.sv");
-                AddTexto("web", "Sitio web", "https://acsa.com.sv");
+                AddTexto("correo", "Correo", "soporte@ejemplo.com");
+                AddTexto("web", "Sitio web", "https://ejemplo.com");
                 AddTexto("direccion", "Dirección");
                 AddTexto("ciudad", "Ciudad");
                 AddTexto("region", "Departamento / Región");
@@ -363,14 +363,14 @@ public sealed class MainForm : Form
                 AddTexto("nombre", "Nombre", "Cesar");
                 AddTexto("apellido", "Apellido", "Lainez");
                 AddTexto("telefono", "Teléfono", "+50322500000");
-                AddTexto("correo", "Correo", "soporte@acsa.com.sv");
+                AddTexto("correo", "Correo", "soporte@ejemplo.com");
                 AddTexto("direccion", "Dirección");
                 AddTexto("web", "Sitio web");
                 AddTexto("nota", "Nota", "", multi: true);
                 break;
 
             case TipoQR.CorreoElectronico:
-                AddTexto("destinatario", "Destinatario", "soporte@acsa.com.sv");
+                AddTexto("destinatario", "Destinatario", "soporte@ejemplo.com");
                 AddTexto("asunto", "Asunto", "Soporte");
                 AddTexto("cuerpo", "Cuerpo", "", multi: true);
                 break;
@@ -383,7 +383,7 @@ public sealed class MainForm : Form
             case TipoQR.EventoCalendario:
                 AddTexto("titulo", "Título", "Reunión de TI");
                 AddTexto("descripcion", "Descripción", "", multi: true);
-                AddTexto("ubicacion", "Lugar", "ACSA");
+                AddTexto("ubicacion", "Lugar", "WanakAI");
                 AddFecha("inicio", "Inicio", DateTime.Today.AddDays(1).AddHours(9));
                 AddFecha("fin", "Fin", DateTime.Today.AddDays(1).AddHours(10));
                 AddCheck("todoeldia", "Todo el día");
@@ -391,8 +391,8 @@ public sealed class MainForm : Form
 
             case TipoQR.Autenticacion2Fa:
                 AddTexto("secreto", "Secreto (Base32)", "JBSWY3DPEHPK3PXP");
-                AddTexto("emisor", "Emisor", "ACSA");
-                AddTexto("cuenta", "Cuenta", "soporte@acsa.com.sv");
+                AddTexto("emisor", "Emisor", "WanakAI");
+                AddTexto("cuenta", "Cuenta", "soporte@ejemplo.com");
                 AddCombo("tipo", "Tipo", new[] { "TOTP (por tiempo)", "HOTP (por contador)" });
                 AddCombo("algoritmo", "Algoritmo", new[] { "SHA1", "SHA256", "SHA512" });
                 AddNumero("digitos", "Dígitos", 6, 8, 6);

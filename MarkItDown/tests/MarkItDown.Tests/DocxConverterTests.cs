@@ -87,14 +87,14 @@ public class DocxConverterTests
     {
         using var docx = BuildDocx((main, body) =>
         {
-            var relationship = main.AddHyperlinkRelationship(new Uri("https://www.acsa.com.sv/"), true);
+            var relationship = main.AddHyperlinkRelationship(new Uri("https://www.ejemplo.com/"), true);
             body.Append(new Paragraph(
-                new Hyperlink(new Run(new Text("sitio de ACSA"))) { Id = relationship.Id }));
+                new Hyperlink(new Run(new Text("sitio de ejemplo"))) { Id = relationship.Id }));
         });
 
         var markdown = Convert(docx);
 
-        Assert.Contains("[sitio de ACSA](https://www.acsa.com.sv/)", markdown);
+        Assert.Contains("[sitio de ejemplo](https://www.ejemplo.com/)", markdown);
     }
 
     [Fact]

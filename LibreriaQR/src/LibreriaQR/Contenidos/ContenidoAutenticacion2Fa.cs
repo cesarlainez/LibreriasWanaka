@@ -11,7 +11,7 @@ public sealed class ContenidoAutenticacion2Fa : ContenidoQR
     /// <summary>Secreto compartido, codificado en Base32 (lo entrega el servicio que activa el 2FA).</summary>
     public string Secreto { get; set; } = string.Empty;
 
-    /// <summary>Emisor / nombre del servicio (p. ej. "ACSA"). Aparece en la app de autenticacion.</summary>
+    /// <summary>Emisor / nombre del servicio (p. ej. "WanakAI"). Aparece en la app de autenticacion.</summary>
     public string Emisor { get; set; } = string.Empty;
 
     /// <summary>Cuenta / etiqueta (p. ej. el correo o usuario).</summary>

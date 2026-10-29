@@ -155,19 +155,19 @@ ContenidoCripto   { Criptomoneda Moneda; string Direccion; decimal? Monto; strin
 
 | Tipo | Ejemplo de entrada | Payload generado |
 |---|---|---|
-| URL | `"acsa.com.sv"` | `http://acsa.com.sv` (antepone esquema si falta) |
-| Texto | `"Hola ACSA"` | `Hola ACSA` |
+| URL | `"ejemplo.com"` | `http://ejemplo.com` (antepone esquema si falta) |
+| Texto | `"Hola WanakAI"` | `Hola WanakAI` |
 | Teléfono | `"+50322500000"` | `tel:+50322500000` |
 | SMS | num + `"Consulta"` | `sms:+50322500000?body=Consulta` |
-| WiFi | ssid/pass WPA | `WIFI:T:WPA;S:ACSA-Invitados;P:Clave1234;;` |
+| WiFi | ssid/pass WPA | `WIFI:T:WPA;S:WanakAI-Invitados;P:Clave1234;;` |
 | vCard | V3 | `BEGIN:VCARD` … `VERSION:3.0` … `END:VCARD` |
 | MeCard | apellido/nombre | `MECARD:N:Lainez,Cesar;TEL:...;EMAIL:...;;` |
 | Correo | dest+asunto+cuerpo | `mailto:x@y?subject=...&body=...` |
 | Ubicación | 13.6989, -89.1914 | `geo:13.6989,-89.1914` |
 | Evento | título+fechas | `BEGIN:VEVENT` … `END:VEVENT` |
-| 2FA TOTP | secreto/emisor/cuenta | `otpauth://totp/ACSA:cuenta?secret=...&issuer=ACSA&digits=6&period=30&algorithm=SHA1` |
+| 2FA TOTP | secreto/emisor/cuenta | `otpauth://totp/WanakAI:cuenta?secret=...&issuer=WanakAI` (`digits`, `period` y `algorithm` solo se agregan si difieren de 6 / 30 / SHA1; la cuenta va codificada: `soporte%40ejemplo.com`) |
 | WhatsApp | `"+503 2250-0000"`+msg | `https://wa.me/50322500000?text=...` (solo dígitos) |
-| Telegram | `"@acsa_sv"` | `https://t.me/acsa_sv` |
+| Telegram | `"@ejemplo_soporte"` | `https://t.me/ejemplo_soporte` |
 | Bitcoin | dir + monto | `bitcoin:<dir>?amount=...` (BIP21) |
 | Ethereum | dir + 1 ETH | `ethereum:<dir>?value=1000000000000000000` (EIP-681, wei) |
 
@@ -177,7 +177,7 @@ ContenidoCripto   { Criptomoneda Moneda; string Direccion; decimal? Monto; strin
 
 ```csharp
 using LibreriaQR;
-var r = new GeneradorQR().DesdeUrl("https://acsa.com.sv");
+var r = new GeneradorQR().DesdeUrl("https://ejemplo.com");
 // <img src="@r.DataUri" />
 string html = $"<img src=\"{r.DataUri}\" alt=\"QR\" />";
 ```
@@ -185,7 +185,7 @@ string html = $"<img src=\"{r.DataUri}\" alt=\"QR\" />";
 ### 6.2 WiFi de invitados
 
 ```csharp
-var r = new GeneradorQR().DesdeWifi("ACSA-Invitados", "Clave1234", TipoCifradoWifi.WPA);
+var r = new GeneradorQR().DesdeWifi("WanakAI-Invitados", "Clave1234", TipoCifradoWifi.WPA);
 r.GuardarPng(@"C:\temp\wifi.png");
 ```
 
@@ -197,10 +197,10 @@ using LibreriaQR.Contenidos;
 
 var vcard = new ContenidoVCard
 {
-    Nombre = "Cesar", Apellido = "Lainez", Empresa = "ACSA", Cargo = "TI",
-    Movil = "+503 7000-0000", Correo = "soporte@acsa.com.sv", SitioWeb = "https://acsa.com.sv",
+    Nombre = "Cesar", Apellido = "Lainez", Empresa = "WanakAI", Cargo = "TI",
+    Movil = "+503 7000-0000", Correo = "soporte@ejemplo.com", SitioWeb = "https://ejemplo.com",
 };
-var opciones = new OpcionesQR { TamanoPx = 600, ColorPrimerPlano = "#003A84" };
+var opciones = new OpcionesQR { TamanoPx = 600, ColorPrimerPlano = "#0F172A" };
 var r = GeneradorQR.Crear(vcard, opciones);
 ```
 
@@ -212,7 +212,7 @@ var opciones = new OpcionesQR
     TamanoPx = 600,
     Logo = new OpcionesLogo { Ruta = @"C:\marca\logo.png", Proporcion = 0.24 },
 };
-var r = new GeneradorQR().DesdeUrl("https://acsa.com.sv", opciones);
+var r = new GeneradorQR().DesdeUrl("https://ejemplo.com", opciones);
 ```
 
 ### 6.5 2FA (TOTP) para vincular Google Authenticator
@@ -221,8 +221,8 @@ var r = new GeneradorQR().DesdeUrl("https://acsa.com.sv", opciones);
 var otp = new ContenidoAutenticacion2Fa
 {
     Secreto = "JBSWY3DPEHPK3PXP",   // Base32
-    Emisor  = "ACSA",
-    Cuenta  = "soporte@acsa.com.sv",
+    Emisor  = "WanakAI",
+    Cuenta  = "soporte@ejemplo.com",
 };
 var r = new GeneradorQR().Generar(otp);
 ```
@@ -272,12 +272,12 @@ using LibreriaQR.Contenidos;
 var gen = new GeneradorQR();
 
 // Simples (atajos):
-gen.DesdeUrl("https://acsa.com.sv");
+gen.DesdeUrl("https://ejemplo.com");
 gen.DesdeTexto("Hola");
 gen.DesdeTelefono("+50322500000");
 gen.DesdeSms("+50322500000", "hola");
 gen.DesdeWifi("SSID", "clave", TipoCifradoWifi.WPA);
-gen.DesdeCorreo("x@acsa.com.sv", "asunto", "cuerpo");
+gen.DesdeCorreo("x@ejemplo.com", "asunto", "cuerpo");
 gen.DesdeUbicacion(13.6989, -89.1914);
 gen.DesdeMensajeria(AppMensajeria.WhatsApp, "+50322500000", "hola");
 
@@ -285,12 +285,12 @@ gen.DesdeMensajeria(AppMensajeria.WhatsApp, "+50322500000", "hola");
 gen.Generar(new ContenidoVCard { Nombre = "C", Apellido = "L" });
 gen.Generar(new ContenidoMeCard { Nombre = "C", Apellido = "L" });
 gen.Generar(new ContenidoEvento { Titulo = "R", Inicio = DateTime.Now, Fin = DateTime.Now.AddHours(1) });
-gen.Generar(new ContenidoAutenticacion2Fa { Secreto = "JBSWY3DPEHPK3PXP", Emisor = "ACSA", Cuenta = "x" });
+gen.Generar(new ContenidoAutenticacion2Fa { Secreto = "JBSWY3DPEHPK3PXP", Emisor = "WanakAI", Cuenta = "x" });
 gen.Generar(new ContenidoCripto { Moneda = Criptomoneda.Bitcoin, Direccion = "1Bv..." });
 
 // Personalización:
-var o = new OpcionesQR { TamanoPx = 512, ColorPrimerPlano = "#003A84",
+var o = new OpcionesQR { TamanoPx = 512, ColorPrimerPlano = "#0F172A",
     Logo = new OpcionesLogo { Ruta = @"C:\logo.png", Proporcion = 0.24 } };
-var r = gen.DesdeUrl("https://acsa.com.sv", o);
+var r = gen.DesdeUrl("https://ejemplo.com", o);
 // r.Png (byte[]), r.Base64, r.DataUri, r.GuardarPng("out.png")
 ```

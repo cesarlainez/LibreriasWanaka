@@ -13,7 +13,7 @@ public sealed class ContenidoMensajeria : ContenidoQR
 
     /// <summary>
     /// Para WhatsApp: el numero con codigo de pais (solo digitos, sin '+'), p. ej. <c>50322500000</c>.
-    /// Para Telegram: el nombre de usuario (con o sin '@'), p. ej. <c>acsa_sv</c>.
+    /// Para Telegram: el nombre de usuario (con o sin '@'), p. ej. <c>ejemplo_soporte</c>.
     /// </summary>
     public string Destino { get; set; } = string.Empty;
 

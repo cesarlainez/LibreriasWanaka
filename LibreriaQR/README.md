@@ -29,13 +29,13 @@ using LibreriaQR.Contenidos;
 var gen = new GeneradorQR();
 
 // 1) Atajos para los tipos simples
-ResultadoQR r = gen.DesdeUrl("https://acsa.com.sv");
+ResultadoQR r = gen.DesdeUrl("https://ejemplo.com");
 
 // 2) Data URI listo para un <img> en HTML/Blazor
 string src = r.DataUri;            // "data:image/png;base64,...."
 
 // 3) O guardar el PNG a disco
-r.GuardarPng(@"C:\temp\acsa.png");
+r.GuardarPng(@"C:\temp\qr-ejemplo.png");
 ```
 
 Para los tipos con muchos campos, se arma el objeto de contenido y se llama a `Generar`:
@@ -44,8 +44,8 @@ Para los tipos con muchos campos, se arma el objeto de contenido y se llama a `G
 var vcard = new ContenidoVCard
 {
     Nombre = "Cesar", Apellido = "Lainez",
-    Empresa = "ACSA", Cargo = "TI",
-    Movil = "+503 7000-0000", Correo = "soporte@acsa.com.sv",
+    Empresa = "WanakAI", Cargo = "TI",
+    Movil = "+503 7000-0000", Correo = "soporte@ejemplo.com",
 };
 ResultadoQR r = gen.Generar(vcard);
 ```
@@ -74,13 +74,13 @@ ResultadoQR r = gen.Generar(vcard);
 var opciones = new OpcionesQR
 {
     TamanoPx = 512,                 // tamaño objetivo (o usar PixelesPorModulo)
-    ColorPrimerPlano = "#003A84",   // azul ACSA
+    ColorPrimerPlano = "#0F172A",   // azul marino WanakAI
     ColorFondo = "#FFFFFF",
     FondoTransparente = false,      // true = PNG con alfa
     Correccion = NivelCorreccion.Alto,
 };
 
-ResultadoQR r = gen.DesdeUrl("https://acsa.com.sv", opciones);
+ResultadoQR r = gen.DesdeUrl("https://ejemplo.com", opciones);
 ```
 
 ### Con logo
@@ -91,14 +91,14 @@ var opciones = new OpcionesQR
     TamanoPx = 600,
     Logo = new OpcionesLogo
     {
-        Ruta = @"C:\marca\logo-acsa.png",  // o Bytes = byte[]
+        Ruta = @"C:\marca\logo-wanakai.png", // o Bytes = byte[]
         Proporcion = 0.24,                  // 24 % del ancho del QR
         ConFondo = true,                    // recuadro blanco detrás
         RadioEsquinas = 0.18,               // esquinas redondeadas
     },
 };
 
-ResultadoQR r = gen.DesdeUrl("https://acsa.com.sv", opciones);
+ResultadoQR r = gen.DesdeUrl("https://ejemplo.com", opciones);
 ```
 
 > Con logo, la corrección de errores sube automáticamente a **Máximo (H, ~30 %)** para que el código siga leyéndose aunque el logo tape parte del centro. No pongás `Proporcion` por encima de `0.30`.
@@ -144,6 +144,6 @@ Ventana completa para elegir cualquiera de los 13 tipos, rellenar sus campos, aj
 
 ## Licencia
 
-Uso interno de ACSA. `QRCoder` (MIT) y `SkiaSharp` (MIT) mantienen su licencia original.
+Uso interno de WanakAI. `QRCoder` (MIT) y `SkiaSharp` (MIT) mantienen su licencia original.
 
 Hasta el 14/10/2026 el render usaba `SixLabors.ImageSharp` 2.1.13. Se reemplazó porque esa versión tiene vulnerabilidades sin corregir en la línea Apache-2.0 y la corrección (3.x/4.x) es de pago para empresas grandes. La API pública no cambió y los QR sin logo salen idénticos píxel a píxel.

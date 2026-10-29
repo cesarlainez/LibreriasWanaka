@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <Authors>ACSA</Authors>
+    <Authors>WanakAI</Authors>
     <Product>MarkItDown.Net</Product>
     <Version>1.0.0</Version>
   </PropertyGroup>
