@@ -9,7 +9,7 @@
     <AssemblyName>LibreriaOCR</AssemblyName>
     <RootNamespace>LibreriaOCR</RootNamespace>
     <Version>1.0.0</Version>
-    <Authors>ACSA</Authors>
+    <Authors>WanakAI</Authors>
     <Description>Librería de OCR para .NET 10 (PDF, PNG, JPG, TIFF) basada en Tesseract. Español.</Description>
     <!-- CS1591: no exigir comentario XML en cada miembro público.
          CA1416: el rasterizado de PDF (PDFtoImage) corre en escritorio/servidor (Windows/Linux/macOS).

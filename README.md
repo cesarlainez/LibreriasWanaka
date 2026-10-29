@@ -2,7 +2,7 @@
 
 > La guía técnica y de mantenimiento de toda la solución está en [`DOCUMENTACION_SOLUCION.md`](DOCUMENTACION_SOLUCION.md).
 
-Monorepo de librerías internas de **ACSA** para .NET. Cada carpeta de nivel superior es una librería independiente, con sus propios `src/`, `samples/` y (según el caso) `tests/` y `app/`. Todas conviven bajo una única solución `LibreriasWanaka.slnx` en la raíz para que un solo Visual Studio (o `dotnet build`) las compile juntas.
+Monorepo de librerías internas de **WanakAI** para .NET. Cada carpeta de nivel superior es una librería independiente, con sus propios `src/`, `samples/` y (según el caso) `tests/` y `app/`. Todas conviven bajo una única solución `LibreriasWanaka.slnx` en la raíz para que un solo Visual Studio (o `dotnet build`) las compile juntas.
 
 > Publicado en: https://github.com/cesarlainez/LibreriasWanaka
 
@@ -125,4 +125,4 @@ LibreriasWanaka/
 
 ## Licencia y autoría
 
-Uso interno de ACSA. Autor: **Cesar Lainez** (soporte@acsa.com.sv). Las dependencias de terceros mantienen su licencia original (MIT, Apache-2.0). Revisá el `README.md` de cada librería para el detalle.
+Uso interno de WanakAI. Autor: **Cesar Lainez**. Las dependencias de terceros mantienen su licencia original (MIT, Apache-2.0). Revisá el `README.md` de cada librería para el detalle.

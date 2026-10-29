@@ -1,9 +1,9 @@
 # Documentación técnica de la solución LibreriasWanaka
 
-Documento de referencia para mantener y ampliar el monorepo de librerías internas de ACSA.
+Documento de referencia para mantener y ampliar el monorepo de librerías internas de WanakAI.
 Describe el estado comprobado de la solución, sus requisitos, convenciones y la forma esperada
 de agregar nuevos proyectos. Se creó el **20 de septiembre de 2026** y se revisó por última vez
-el **13 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y auditoría NuGet).
+el **28 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y auditoría NuGet).
 
 > Este documento es la guía técnica de la solución. Cada librería debe conservar además su
 > propio `README.md` con el API, ejemplos y limitaciones específicas. Si una librería tiene
@@ -24,8 +24,8 @@ el **13 de octubre de 2026** contra el repositorio (`git`, `.slnx`, `.csproj` y 
 | Usings implícitos | Habilitados (`ImplicitUsings=enable`) |
 | Versión de lenguaje | `latest` en los proyectos que tienen configuración compartida |
 | Documentación XML | Obligatoria para las librerías públicas nuevas; actualmente habilitada en OCR, QR y Tokens |
-| Autor/producto | ACSA / LibreriasWanaka |
-| Licenciamiento | Uso interno de ACSA; las dependencias conservan sus licencias originales |
+| Autor/producto | WanakAI / LibreriasWanaka |
+| Licenciamiento | Uso interno de WanakAI; las dependencias conservan sus licencias originales |
 
 ### 1.1 Estado del repositorio
 
@@ -400,3 +400,4 @@ al README o historial de la librería correspondiente.
 | 2026-10-04 | MarkItDown (net10): convertidor HTML a Markdown pensado para correos, con AngleSharp 1.8.3. |
 | 2026-10-14 | Actualización de NuGet. LibreriaQR reemplaza `SixLabors.ImageSharp 2.1.13` (vulnerable) por `SkiaSharp 4.153.1` y sube QRCoder a 1.8.1. MarkItDown (net10 y net48) sube PdfPig a 0.1.16, AngleSharp a 1.8.4, DI a 10.0.13, xUnit a 2.9.3, runner a 4.0.1, Test.Sdk a 18.11.0 y coverlet a 10.1.0. Mismas pruebas en verde: 79 en net10 y 72 en net48. |
 | 2026-10-13 | Revisión de la guía contra el repositorio. LibreriaQR ya está versionada y tiene demo WinForms. Se documentan el convertidor HTML, el aviso de seguridad de ImageSharp 2.1.13 (sin corrección en la línea Apache), la nota sobre el runtime del SDK y el comando de auditoría. |
+| 2026-10-28 | Marca: las librerías pasan a ser de **WanakAI**. `Authors` = `WanakAI` en OCR, QR, Tokens y MarkItDown (net10 y net48); README, guía y `AGENTS.md` sin referencias a la marca anterior. Los datos de ejemplo de demos, pruebas y documentación usan dominios reservados (`ejemplo.com`, `.test`) en lugar de marcas de terceros, y el color azul marino WanakAI `#0F172A`. Se corrige en `LibreriaQR/AGENTS.md` el payload documentado de 2FA TOTP. Sin cambios de API ni de comportamiento. |

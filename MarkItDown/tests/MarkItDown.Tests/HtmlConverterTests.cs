@@ -58,9 +58,9 @@ public class HtmlConverterTests
     [Fact]
     public void Enlaces_con_y_sin_url()
     {
-        const string html = "<p>Ver <a href=\"https://www.airbnb.com/rooms/123\">anuncio</a> y <a href=\"javascript:void(0)\">nada</a></p>";
+        const string html = "<p>Ver <a href=\"https://www.ejemplo.com/alojamientos/123\">anuncio</a> y <a href=\"javascript:void(0)\">nada</a></p>";
 
-        Assert.Equal("Ver [anuncio](https://www.airbnb.com/rooms/123) y nada", Convertir(html));
+        Assert.Equal("Ver [anuncio](https://www.ejemplo.com/alojamientos/123) y nada", Convertir(html));
         Assert.Equal("Ver anuncio y nada", Convertir(html, enlaces: false));
     }
 

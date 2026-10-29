@@ -167,7 +167,7 @@ dotnet run --project samples/LibreriaOCR.WinFormsTester
 | Póliza asistencia | 95 % | 1.4 s |
 | Anexo de exclusión | 91 % | 1.3 s |
 | Aviso de emisión | 88 % | 1.2 s |
-| Póliza diamante | 85 % | 1.1 s |
+| Póliza (otro producto) | 85 % | 1.1 s |
 | (otros dos) | 94–95 % | 1.5–2.1 s |
 
 Promedio ~**91 %** de confianza, ~1.5 s por página.

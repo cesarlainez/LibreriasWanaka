@@ -15,13 +15,13 @@ Console.WriteLine("============================");
 var casos = new List<(string nombre, ContenidoQR contenido, Func<string, bool> valida, OpcionesQR? opciones, string archivo)>
 {
     ("01 URL",
-     new ContenidoUrl("https://acsa.com.sv"),
-     p => p.Contains("acsa.com.sv") && p.StartsWith("http"),
+     new ContenidoUrl("https://ejemplo.com"),
+     p => p.Contains("ejemplo.com") && p.StartsWith("http"),
      null, "01-url.png"),
 
     ("02 Texto plano",
-     new ContenidoTexto("Hola ACSA"),
-     p => p == "Hola ACSA",
+     new ContenidoTexto("Hola WanakAI"),
+     p => p == "Hola WanakAI",
      null, "02-texto.png"),
 
     ("03 Telefono",
@@ -35,23 +35,23 @@ var casos = new List<(string nombre, ContenidoQR contenido, Func<string, bool> v
      null, "04-sms.png"),
 
     ("05 WiFi",
-     new ContenidoWifi("ACSA-Invitados", "Clave1234", TipoCifradoWifi.WPA),
-     p => p.StartsWith("WIFI:") && p.Contains("ACSA-Invitados"),
+     new ContenidoWifi("WanakAI-Invitados", "Clave1234", TipoCifradoWifi.WPA),
+     p => p.StartsWith("WIFI:") && p.Contains("WanakAI-Invitados"),
      null, "05-wifi.png"),
 
     ("06 vCard",
-     new ContenidoVCard { Nombre = "Cesar", Apellido = "Lainez", Empresa = "ACSA", Cargo = "TI", Correo = "soporte@acsa.com.sv", Movil = "+50370000000" },
+     new ContenidoVCard { Nombre = "Cesar", Apellido = "Lainez", Empresa = "WanakAI", Cargo = "TI", Correo = "soporte@ejemplo.com", Movil = "+50370000000" },
      p => p.Contains("BEGIN:VCARD") && p.Contains("VERSION:3.0") && p.Contains("Lainez"),
      null, "06-vcard.png"),
 
     ("07 MeCard",
-     new ContenidoMeCard { Nombre = "Cesar", Apellido = "Lainez", Telefono = "+50322500000", Correo = "soporte@acsa.com.sv" },
+     new ContenidoMeCard { Nombre = "Cesar", Apellido = "Lainez", Telefono = "+50322500000", Correo = "soporte@ejemplo.com" },
      p => p.StartsWith("MECARD:") && p.EndsWith(";;") && p.Contains("N:Lainez,Cesar"),
      null, "07-mecard.png"),
 
     ("08 Correo",
-     new ContenidoCorreo("soporte@acsa.com.sv", "Soporte", "Necesito ayuda"),
-     p => p.StartsWith("mailto:") && p.Contains("soporte@acsa.com.sv"),
+     new ContenidoCorreo("soporte@ejemplo.com", "Soporte", "Necesito ayuda"),
+     p => p.StartsWith("mailto:") && p.Contains("soporte@ejemplo.com"),
      null, "08-correo.png"),
 
     ("09 Ubicacion GPS",
@@ -60,13 +60,13 @@ var casos = new List<(string nombre, ContenidoQR contenido, Func<string, bool> v
      null, "09-ubicacion.png"),
 
     ("10 Evento",
-     new ContenidoEvento { Titulo = "Reunion TI", Ubicacion = "ACSA", Inicio = new DateTime(2026, 10, 1, 9, 0, 0), Fin = new DateTime(2026, 10, 1, 10, 0, 0) },
+     new ContenidoEvento { Titulo = "Reunion TI", Ubicacion = "WanakAI", Inicio = new DateTime(2026, 10, 1, 9, 0, 0), Fin = new DateTime(2026, 10, 1, 10, 0, 0) },
      p => p.Contains("BEGIN:VEVENT") && p.Contains("Reunion TI"),
      null, "10-evento.png"),
 
     ("11 2FA (TOTP)",
-     new ContenidoAutenticacion2Fa { Secreto = "JBSWY3DPEHPK3PXP", Emisor = "ACSA", Cuenta = "soporte@acsa.com.sv" },
-     p => p.StartsWith("otpauth://totp/") && p.Contains("ACSA"),
+     new ContenidoAutenticacion2Fa { Secreto = "JBSWY3DPEHPK3PXP", Emisor = "WanakAI", Cuenta = "soporte@ejemplo.com" },
+     p => p.StartsWith("otpauth://totp/") && p.Contains("WanakAI"),
      null, "11-2fa.png"),
 
     ("12 WhatsApp",
@@ -75,8 +75,8 @@ var casos = new List<(string nombre, ContenidoQR contenido, Func<string, bool> v
      null, "12-whatsapp.png"),
 
     ("12b Telegram",
-     new ContenidoMensajeria(AppMensajeria.Telegram, "@acsa_sv"),
-     p => p == "https://t.me/acsa_sv",
+     new ContenidoMensajeria(AppMensajeria.Telegram, "@ejemplo_soporte"),
+     p => p == "https://t.me/ejemplo_soporte",
      null, "12b-telegram.png"),
 
     ("13 Bitcoin",
@@ -89,17 +89,17 @@ var casos = new List<(string nombre, ContenidoQR contenido, Func<string, bool> v
      p => p == "ethereum:0x71C7656EC7ab88b098defB751B7401B5f6d8976F?value=1000000000000000000",
      null, "13b-ethereum.png"),
 
-    // Opciones: color e-e-e (azul ACSA) + tamano objetivo.
+    // Opciones: color azul marino WanakAI + tamano objetivo.
     ("Extra color+tamano",
-     new ContenidoUrl("https://acsa.com.sv"),
-     p => p.Contains("acsa.com.sv"),
-     new OpcionesQR { ColorPrimerPlano = "#003A84", TamanoPx = 512 },
+     new ContenidoUrl("https://ejemplo.com"),
+     p => p.Contains("ejemplo.com"),
+     new OpcionesQR { ColorPrimerPlano = "#0F172A", TamanoPx = 512 },
      "extra-color.png"),
 
     // Opciones: logo centrado (fuerza correccion maxima).
     ("Extra logo",
-     new ContenidoUrl("https://acsa.com.sv"),
-     p => p.Contains("acsa.com.sv"),
+     new ContenidoUrl("https://ejemplo.com"),
+     p => p.Contains("ejemplo.com"),
      new OpcionesQR { Logo = new OpcionesLogo { Bytes = CrearLogoDePrueba(), Proporcion = 0.24 } },
      "extra-logo.png"),
 };
@@ -147,9 +147,9 @@ return fallas == 0 ? 0 : 2;
 
 static byte[] CrearLogoDePrueba()
 {
-    // Logo de prueba: cuadrado azul ACSA. Sustituyalo por su logotipo real.
+    // Logo de prueba: cuadrado azul marino WanakAI. Sustituyalo por su logotipo real.
     using var img = new SKBitmap(160, 160);
-    img.Erase(new SKColor(0x00, 0x3A, 0x84));
+    img.Erase(new SKColor(0x0F, 0x17, 0x2A));
     using var datos = img.Encode(SKEncodedImageFormat.Png, 100);
     return datos.ToArray();
 }

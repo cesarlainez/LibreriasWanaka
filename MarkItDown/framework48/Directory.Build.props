@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <Authors>ACSA</Authors>
+    <Authors>WanakAI</Authors>
     <Product>MarkDown Framework 4.8</Product>
     <Version>1.0.0</Version>
     <!-- Genera automáticamente los redirects de enlace para las dependencias NuGet. -->

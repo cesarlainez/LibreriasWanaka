@@ -9,7 +9,7 @@
     <AssemblyName>LibreriaTokens</AssemblyName>
     <RootNamespace>LibreriaTokens</RootNamespace>
     <Version>1.0.0</Version>
-    <Authors>ACSA</Authors>
+    <Authors>WanakAI</Authors>
     <Product>LibreriaTokens</Product>
     <Description>Normalizacion de whitespace y estimacion de tokens para bajar el consumo de entrada al llamar LLMs (OpenAI, Anthropic). Cero dependencias externas.</Description>
     <!-- CS1591: no exigir comentario XML en cada miembro publico. -->
